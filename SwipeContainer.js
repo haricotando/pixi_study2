@@ -3,6 +3,8 @@ import Utils from './helper/Utils.js';
 import { dataProvider } from './dataProvider.js';
 import GraphicsHelper from './helper/GraphicsHelper.js';
 import { ApplicationRoot } from './ApplicationRoot.js';
+import { Card } from './Card.js';
+import Easing from './helper/Easing.js';
 
 export class SwipeContainer extends PIXI.Container {
     /* ============================================================
@@ -11,14 +13,23 @@ export class SwipeContainer extends PIXI.Container {
     constructor() {
         super();
 
+        this.shadow = {
+            minX:0,
+            maxX:800,
+            tapStart:0,
+            dest:0,
+            current:0,
+            last:0,
+        };
 
+        this.cardList = [];
 
         this.bg = GraphicsHelper.exDrawRect(0, 0, window.innerWidth, window.innerHeight, true, true);
         this.addChild(this.bg);
         this.bg.buttonMode = true;
         this.bg.interactive = true;
 
-        this.textFldA = this.addChild(new PIXI.Text(0, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:80})));
+        this.textFldA = this.addChild(new PIXI.Text(`shadow min: ${this.shadow.minX} - max: ${this.shadow.maxX}`, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:80})));
         this.textFldA.anchor.set(0.5);
         AlignHelper.xCenterWindow(this.textFldA);
         this.textFldA.y = 350;
@@ -31,22 +42,26 @@ export class SwipeContainer extends PIXI.Container {
         this.textFldC = this.addChild(new PIXI.Text(0, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:80})));
         this.textFldC.anchor.set(0.5);
         AlignHelper.xCenterWindow(this.textFldC);
-        this.textFldC.y = 650;
+        this.textFldC.y = 750;
 
         this.textFldD = this.addChild(new PIXI.Text(0, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:80})));
         this.textFldD.anchor.set(0.5);
         AlignHelper.xCenterWindow(this.textFldD);
-        this.textFldD.y = 800;
+        this.textFldD.y = 900;
 
-        this.textFldE = this.addChild(new PIXI.Text(0, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:80})));
-        this.textFldE.anchor.set(0.5);
-        AlignHelper.xCenterWindow(this.textFldE);
-        this.textFldE.y = 950;
+        this.shadowBox = this.addChild(GraphicsHelper.exDrawRect(0, 0, 100, 100, 40, {color:0xFF0000}));
+        Utils.pivotCenter(this.shadowBox);
+        this.shadowBox.y = 600;
 
-        this.card = this.addChild(GraphicsHelper.exDrawRect(0, 0, 100, 150, 40, {color:0xFF0000}));
-        Utils.pivotCenter(this.card);
-        this.card.y = 1200;
-
+        this.cardHolder = this.addChild(new PIXI.Container());
+        this.cardHolder.y = 1000;
+        for(let i=0; i<10; i++){
+            let card = this.cardHolder.addChild(new Card(i));
+            const obj = {card:card, index:i}
+            this.cardList.push(obj);
+            // card.alpha = 0.2;
+            // card.y = (i+1)*200;
+        }
 
         // ===== swipe ticker関連
         this.initSwipeEvents();
@@ -55,14 +70,7 @@ export class SwipeContainer extends PIXI.Container {
             this.onTickerHandler();
         });
 
-        this.shadow = {
-            minX:0,
-            maxX:1000,
-            tapStart:0,
-            dest:0,
-            current:0,
-            last:0,
-        };
+
     }
 
     initSwipeEvents(){
@@ -70,7 +78,6 @@ export class SwipeContainer extends PIXI.Container {
         this.bg.on('pointermove', this.onTouchMove.bind(this));
         this.bg.on('pointerup', this.onTouchEnd.bind(this));
         this.bg.on('pointerupoutside', this.onTouchEnd.bind(this));
-
     }
     
     onTouchStart(event){
@@ -84,8 +91,6 @@ export class SwipeContainer extends PIXI.Container {
         tmp = tmp < this.shadow.minX ? this.shadow.minX : tmp;
         tmp = tmp > this.shadow.maxX ? this.shadow.maxX : tmp;
         this.shadow.dest = tmp;
-        
-        this.textFldB.text = `diff: ${diff}`;
     }
     
     onTickerHandler(){
@@ -97,13 +102,42 @@ export class SwipeContainer extends PIXI.Container {
         }else{
             this.shadow.current = Math.round((this.shadow.current + diff)*10)/10;
         }
+        this.syncCards();
 
-        this.card.x = this.shadow.current;
+        const relX = (window.innerWidth - 800)/2  + this.shadow.current;
+        this.shadowBox.x = relX;
+        // this.textFldA.text = `tapStart: ${this.shadow.tapStart}`;
+        this.textFldB.text = `dest: ${this.shadow.dest} / current: ${this.shadow.current}`;
         
-        this.textFldA.text = `tapStart: ${this.shadow.tapStart}`;
-        this.textFldC.text = `dest: ${this.shadow.dest} / current: ${this.shadow.current}`;
     }
 
     onTouchEnd(event){
     }
+
+    syncCards(){
+        const shadowGrid = this.shadow.maxX / this.cardList.length/2;
+        
+        for (let i = 0; i < this.cardList.length; i++) {
+            const head = i * shadowGrid;
+            const tail = (this.cardList.length - i) * shadowGrid;
+            const tmpCurrent = this.shadow.current + head > this.shadow.maxX ? this.shadow.maxX : this.shadow.current + head;
+            const tmpCurrentHalf = tmpCurrent > this.shadow.maxX/2 ? this.shadow.maxX - tmpCurrent : tmpCurrent;
+            if(i == 0){
+
+                // this.textFldD.text = `${tmpCurrentHalf}`;
+            }
+            
+            
+            const nextX = Easing.linear(tmpCurrent, 0, window.innerWidth, this.shadow.maxX+ tail);
+            const nextY = Easing.linear(tmpCurrent, 0, 100, this.shadow.maxX+ tail);
+            // const nextScale = Easing.easeInOutExpo(tmpCurrentHalf, 1, 1, (this.shadow.maxX+ tail)/2);
+
+            const card = this.cardList[i].card;
+            card.x = nextX;
+            card.y = Math.abs(50-nextY);
+            // card.scale.set(nextScale+0.5);
+          }
+        
+    }
+
 }

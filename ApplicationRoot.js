@@ -1,6 +1,8 @@
 import { dataProvider } from './dataProvider.js';
 import Utils from './helper/Utils.js';
+import Easing from './helper/Easing.js';
 import { SwipeContainer } from './SwipeContainer.js';
+import GraphicsHelper from './helper/GraphicsHelper.js';
 
 
 export class ApplicationRoot extends PIXI.Container {
@@ -20,12 +22,40 @@ export class ApplicationRoot extends PIXI.Container {
     }
 
     init(){
-        // console.log(app)
-        
+        // this.easeStudy();
         this.swipeContainer = this.addChild(new SwipeContainer());
         this.txtFld = this.addChild(new PIXI.Text('Swipe event study', Utils.cloneTextStyle(dataProvider.baseStyle)));
         this.txtFld.anchor.set(0.5);
         this.txtFld.x = window.innerWidth / 2;
         this.txtFld.y = 100;
+    }
+
+    easeStudy(){
+        let time = 0;
+        let box = this.addChild(GraphicsHelper.exDrawRect(0, 0, 100, 100, true, {color:0xFF00FF}));
+        Utils.pivotCenter(box);
+        box.x = 100;
+        box.y = 100;
+
+        let StartVal = 0;
+        let endVal = 500;
+
+
+        const ticker = dataProvider.data.app.ticker;
+        ticker.add((delta) => {
+            // this.box.x += 1;
+            if(time < 100){
+                time++;
+                /*  
+                t: current time
+                b: begInnIng value
+                c: change In value
+                d: duration
+                */
+               let result = Easing.easeInOutQuad(time, 500, -300, 100);
+               console.log(result);
+               box.x = result;
+            }
+        });
     }
 }
