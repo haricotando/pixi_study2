@@ -33,6 +33,16 @@ export class SwipeContainer extends PIXI.Container {
         AlignHelper.xCenterWindow(this.textFldC);
         this.textFldC.y = 650;
 
+        this.textFldD = this.addChild(new PIXI.Text(0, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:80})));
+        this.textFldD.anchor.set(0.5);
+        AlignHelper.xCenterWindow(this.textFldD);
+        this.textFldD.y = 800;
+
+        this.textFldE = this.addChild(new PIXI.Text(0, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:80})));
+        this.textFldE.anchor.set(0.5);
+        AlignHelper.xCenterWindow(this.textFldE);
+        this.textFldE.y = 950;
+
         this.card = this.addChild(GraphicsHelper.exDrawRect(0, 0, 100, 150, 40, {color:0xFF0000}));
         Utils.pivotCenter(this.card);
         this.card.y = 1200;
@@ -45,14 +55,13 @@ export class SwipeContainer extends PIXI.Container {
             this.onTickerHandler();
         });
 
-        this.swipe = {
+        this.shadow = {
+            minX:0,
+            maxX:1000,
             tapStart:0,
-            tapCurrent:0,
-            diff:0,
-            lastShadow:0,
-            shadowDest:0,
-            shadowCurrent:0,
-
+            dest:0,
+            current:0,
+            last:0,
         };
     }
 
@@ -65,24 +74,34 @@ export class SwipeContainer extends PIXI.Container {
     }
     
     onTouchStart(event){
-        this.swipe.tapStart = event.data.global.x;
-        this.swipe.lastShadow = this.swipe.shadowDest;
+        this.shadow.tapStart = event.data.global.x;
+        this.shadow.last = this.shadow.dest;
     }
     
     onTouchMove(event){
-        this.swipe.tapCurrent = event.data.global.x;
-        this.swipe.diff = this.swipe.tapCurrent - this.swipe.tapStart;
-        this.swipe.shadowDest = this.swipe.lastShadow + this.swipe.diff;
-
+        const diff = event.data.global.x - this.shadow.tapStart;
+        let tmp = this.shadow.last + diff;
+        tmp = tmp < this.shadow.minX ? this.shadow.minX : tmp;
+        tmp = tmp > this.shadow.maxX ? this.shadow.maxX : tmp;
+        this.shadow.dest = tmp;
+        
+        this.textFldB.text = `diff: ${diff}`;
     }
-
+    
     onTickerHandler(){
+        const decel = 0.2;
+        let diff = (this.shadow.dest - this.shadow.current) * decel;
+        
+        if(Math.abs(this.shadow.current - this.shadow.dest) < 1){
+            this.shadow.current = this.shadow.dest;
+        }else{
+            this.shadow.current = Math.round((this.shadow.current + diff)*10)/10;
+        }
 
-        this.swipe.shadowCurrent = this.swipe.shadowDest;
-        this.card.x = this.swipe.shadowCurrent;
-        this.textFldA.text = `tapStart: ${this.swipe.tapStart} / current: ${this.swipe.tapCurrent}`;
-        this.textFldB.text = `diff: ${this.swipe.diff}`;
-        this.textFldC.text = `dest: ${this.swipe.shadowDest}`;
+        this.card.x = this.shadow.current;
+        
+        this.textFldA.text = `tapStart: ${this.shadow.tapStart}`;
+        this.textFldC.text = `dest: ${this.shadow.dest} / current: ${this.shadow.current}`;
     }
 
     onTouchEnd(event){
