@@ -11,12 +11,7 @@ export class SwipeContainer extends PIXI.Container {
     constructor() {
         super();
 
-        this.shadow = {
-            tapStartX:0,
-            tapEndX:0,
-            destX:0,
-            currentX:0,
-        };
+
 
         this.bg = GraphicsHelper.exDrawRect(0, 0, window.innerWidth, window.innerHeight, true, true);
         this.addChild(this.bg);
@@ -49,6 +44,16 @@ export class SwipeContainer extends PIXI.Container {
         ticker.add((delta) => {
             this.onTickerHandler();
         });
+
+        this.swipe = {
+            tapStart:0,
+            tapCurrent:0,
+            diff:0,
+            lastShadow:0,
+            shadowDest:0,
+            shadowCurrent:0,
+
+        };
     }
 
     initSwipeEvents(){
@@ -60,27 +65,26 @@ export class SwipeContainer extends PIXI.Container {
     }
     
     onTouchStart(event){
-        this.shadow.tapStartX = event.data.global.x;
-        this.shadow.tapEndX = null;
-        this.shadow.currentX = event.data.global.x;
+        this.swipe.tapStart = event.data.global.x;
+        this.swipe.lastShadow = this.swipe.shadowDest;
     }
     
     onTouchMove(event){
-        this.shadow.destX = event.data.global.x;
+        this.swipe.tapCurrent = event.data.global.x;
+        this.swipe.diff = this.swipe.tapCurrent - this.swipe.tapStart;
+        this.swipe.shadowDest = this.swipe.lastShadow + this.swipe.diff;
+
     }
 
     onTickerHandler(){
-        const decel = 0.2;
-        let diff = Math.round(((this.shadow.destX - this.shadow.currentX)*decel)*10)/10;
-        this.shadow.currentX = this.shadow.currentX + diff;
 
-        this.textFldA.text = `tapStart: ${this.shadow.tapStartX} / tapEnd: ${this.shadow.tapEndX}`;
-        this.textFldB.text = `destX: ${this.shadow.destX}`;
-        this.textFldC.text = `diff: ${diff}`;
-        this.card.x = this.shadow.currentX;
+        this.swipe.shadowCurrent = this.swipe.shadowDest;
+        this.card.x = this.swipe.shadowCurrent;
+        this.textFldA.text = `tapStart: ${this.swipe.tapStart} / current: ${this.swipe.tapCurrent}`;
+        this.textFldB.text = `diff: ${this.swipe.diff}`;
+        this.textFldC.text = `dest: ${this.swipe.shadowDest}`;
     }
 
     onTouchEnd(event){
-        this.shadow.tapEndX = event.data.global.x;
     }
 }
