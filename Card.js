@@ -10,7 +10,7 @@ export class Card extends PIXI.Container {
     constructor(index) {
         super();
         
-        this.card = this.addChild(GraphicsHelper.exDrawRect(0, 0, 108, 170, true, {color:0x999999}));
+        this.card = this.addChild(GraphicsHelper.exDrawRect(0, 0, 200, 300, true, {color:0x999999}));
         Utils.pivotCenter(this.card);
 
         this.label = this.addChild(new PIXI.Text(index, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:80})));

@@ -20,6 +20,8 @@ export class SwipeContainer extends PIXI.Container {
             dest:0,
             current:0,
             last:0,
+            holderLeft:0,
+            holderRight:0,
         };
 
         this.cardList = [];
@@ -39,29 +41,21 @@ export class SwipeContainer extends PIXI.Container {
         AlignHelper.xCenterWindow(this.textFldB);
         this.textFldB.y = 500;
 
-        this.textFldC = this.addChild(new PIXI.Text(0, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:80})));
-        this.textFldC.anchor.set(0.5);
-        AlignHelper.xCenterWindow(this.textFldC);
-        this.textFldC.y = 750;
-
-        this.textFldD = this.addChild(new PIXI.Text(0, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:80})));
-        this.textFldD.anchor.set(0.5);
-        AlignHelper.xCenterWindow(this.textFldD);
-        this.textFldD.y = 900;
-
         this.shadowBox = this.addChild(GraphicsHelper.exDrawRect(0, 0, 100, 100, 40, {color:0xFF0000}));
         Utils.pivotCenter(this.shadowBox);
         this.shadowBox.y = 600;
 
         this.cardHolder = this.addChild(new PIXI.Container());
-        this.cardHolder.y = 1000;
+        this.cardHolder.y = 1500;
         for(let i=0; i<10; i++){
             let card = this.cardHolder.addChild(new Card(i));
             const obj = {card:card, index:i}
+            card.x = i * 210 + 100;
             this.cardList.push(obj);
-            // card.alpha = 0.2;
-            // card.y = (i+1)*200;
         }
+
+        this.shadow.holderLeft = 0;
+        this.shadow.holderRight = window.innerWidth - this.cardHolder.width;
 
         // ===== swipe ticker関連
         this.initSwipeEvents();
@@ -69,8 +63,6 @@ export class SwipeContainer extends PIXI.Container {
         ticker.add((delta) => {
             this.onTickerHandler();
         });
-
-
     }
 
     initSwipeEvents(){
@@ -87,7 +79,7 @@ export class SwipeContainer extends PIXI.Container {
     
     onTouchMove(event){
         const diff = event.data.global.x - this.shadow.tapStart;
-        let tmp = this.shadow.last + diff;
+        let tmp = this.shadow.last - diff;
         tmp = tmp < this.shadow.minX ? this.shadow.minX : tmp;
         tmp = tmp > this.shadow.maxX ? this.shadow.maxX : tmp;
         this.shadow.dest = tmp;
@@ -102,12 +94,14 @@ export class SwipeContainer extends PIXI.Container {
         }else{
             this.shadow.current = Math.round((this.shadow.current + diff)*10)/10;
         }
-        this.syncCards();
+        // this.syncCards();
 
         const relX = (window.innerWidth - 800)/2  + this.shadow.current;
         this.shadowBox.x = relX;
-        // this.textFldA.text = `tapStart: ${this.shadow.tapStart}`;
-        this.textFldB.text = `dest: ${this.shadow.dest} / current: ${this.shadow.current}`;
+        this.textFldA.text = `c: ${this.shadow.current} / d: ${this.shadow.maxX}`;
+        let holderX = Math.round(this.shadow.current / this.shadow.maxX * this.shadow.holderRight);
+        this.cardHolder.x = holderX;
+        this.textFldB.text = `${holderX}`;
         
     }
 
