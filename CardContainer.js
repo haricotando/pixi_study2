@@ -6,16 +6,22 @@ import { ApplicationRoot } from './ApplicationRoot.js';
 import { Card } from './Card.js';
 import Easing from './helper/Easing.js';
 
-export class SwipeContainer extends PIXI.Container {
+export class CardContainer extends PIXI.Container {
     /* ============================================================
         constructor
     ============================================================ */
     constructor() {
         super();
-
+        
+        this.cardSpacing = 0;
+        this.cardBaseWidth = 200;
+        this.cardHolderWidth = 0;
+        this.cardList = [];
+        
+2
         this.shadow = {
             minX:0,
-            maxX:800,
+            maxX:2000,
             tapStart:0,
             dest:0,
             current:0,
@@ -24,28 +30,25 @@ export class SwipeContainer extends PIXI.Container {
             holderRight:0,
         };
 
-        this.cardList = [];
-        this.initDebugElement()
+        this.initDebugElement();
 
         this.cardHolder = this.addChild(new PIXI.Container());
+        this.cardHolder.sortableChildren = true;
+        this.cardHolder.addChild(GraphicsHelper.exDrawRect(0, -300, 100, 100, false, {color:0xFF00FF}));
         this.cardHolder.y = 1500;
-        for(let i=0; i<10; i++){
+        for(let i=0; i<20; i++){
             let card = this.cardHolder.addChild(new Card(i));
             const obj = {card:card, index:i}
-            card.x = i * 210 + 100;
+            card.x = i * this.cardBaseWidth + this.cardBaseWidth/2;
+            // card.x = i * this.cardBaseWidth + this.cardBaseWidth/2;
             this.cardList.push(obj)
-            // card.interactive = true;
-            // card.on('touchstart', (event) => {
-            //     card.alpha = 0.2;
-            // });
-            // card.on('touchend', (event) => {
-            //     card.alpha = 0.2;
-            // });
         }
+        this.cardHolderWidth = this.cardList.length * this.cardBaseWidth;
 
+        
         this.shadow.holderLeft = 0;
-        this.shadow.holderRight = window.innerWidth - this.cardHolder.width;
-
+        this.shadow.holderRight = window.innerWidth - this.cardHolderWidth;
+        
         // ===== swipe ticker関連
         this.initSwipeEvents();
         const ticker = dataProvider.data.app.ticker;
@@ -53,13 +56,15 @@ export class SwipeContainer extends PIXI.Container {
             this.onTickerHandler();
         });
     }
+    
+    // card.rotation = i * 10 * PIXI.DEG_TO_RAD
 
     initSwipeEvents(){
-        this.cardHolder.interactive = true;
-        this.cardHolder.on('pointerdown', this.onTouchStart.bind(this));
-        this.cardHolder.on('pointermove', this.onTouchMove.bind(this));
-        this.cardHolder.on('pointerup', this.onTouchEnd.bind(this));
-        this.cardHolder.on('pointerupoutside', this.onTouchEnd.bind(this));
+        this.bg.interactive = true;
+        this.bg.on('pointerdown', this.onTouchStart.bind(this));
+        this.bg.on('pointermove', this.onTouchMove.bind(this));
+        this.bg.on('pointerup', this.onTouchEnd.bind(this));
+        this.bg.on('pointerupoutside', this.onTouchEnd.bind(this));
     }
     
     onTouchStart(event){
@@ -84,21 +89,17 @@ export class SwipeContainer extends PIXI.Container {
         }else{
             this.shadow.current = Math.round((this.shadow.current + diff)*10)/10;
         }
-        
-        const relX = (window.innerWidth - 800)/2  + this.shadow.current;
-        this.shadowBox.x = relX;
-        this.textFldA.text = `c: ${this.shadow.current} / d: ${this.shadow.maxX}`;
         let holderX = Math.round(this.shadow.current / this.shadow.maxX * this.shadow.holderRight);
         this.cardHolder.x = holderX;
-        this.textFldB.text = `${holderX}`;
-
-        // rotation
-        // -45から45まで
-        const MaxRangeOfRotate = 90;
-        const rot = this.shadow.current / this.shadow.maxX * MaxRangeOfRotate - MaxRangeOfRotate/2;
-
-        this.textFldC.text = rot;
         
+        // debug
+        this.textFldA.text = `c: ${this.shadow.current} / d: ${this.shadow.maxX}`;
+        this.textFldB.text = `cardHolder.x: ${holderX}`;
+
+        this.textFldC.style.fontSize = 60;
+        this.textFldC.style.align = 'center';
+        this.textFldC.text = `window.innerWidth: ${window.innerWidth}\ncardHolderWidth:${this.cardHolderWidth}`
+        this.textFldD.text = `shadow.holderRight = ${this.shadow.holderRight}`
         this.syncCards();
     }
 
@@ -106,22 +107,43 @@ export class SwipeContainer extends PIXI.Container {
     }
 
     syncCards(){
-        // const shadowGrid = this.shadow.maxX / this.cardList.length/2;
-        
+        let highestCard = undefined;
+        let highestVal = 0;
         for (let i = 0; i < this.cardList.length; i++) {
             const card = this.cardList[i].card;
-            // card.x = nextX;
-            // card.y = Math.abs(50-nextY);
-            // card.scale.set(nextScale+0.5);
+            // scale calc
+            // このキメ打ち400をちゃんと分解したい
+            const distanceFromCenter = card.x - 400 + this.cardHolder.x - this.cardBaseWidth/2;
+            let tmpAbs = Math.abs(distanceFromCenter);
+            tmpAbs = 0 - (tmpAbs > 400 ? 400 : tmpAbs) + 400;
+            const scaled = tmpAbs / 400 * 0.8 + 1;
+            if(scaled > highestVal){
+                highestCard = card;
+                highestVal = scaled;
+            }
+            
+
+            // posY calc
+            let tmpAbsPosY = 0-(tmpAbs > 400 ? 400 : tmpAbs);
+            card.y = Math.round(tmpAbsPosY * 0.4);
+
+            // rotation calc
+            card.rotation = distanceFromCenter / 50 * PIXI.DEG_TO_RAD;
+            
+            card.label2.text= `${Math.round(scaled * 100) / 100}`;
+
+            card.scale.set(scaled);
+            card.zIndex = i;
           }
+          highestCard.zIndex = 100;
+          this.cardHolder.sortChildren();
+        //   this.z ++;
         
     }
 
     initDebugElement(){
         this.bg = GraphicsHelper.exDrawRect(0, 0, window.innerWidth, window.innerHeight, true, true);
         this.addChild(this.bg);
-        // this.bg.buttonMode = true;
-        // this.bg.interactive = true;
 
         this.textFldA = this.addChild(new PIXI.Text(`shadow min: ${this.shadow.minX} - max: ${this.shadow.maxX}`, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:80})));
         this.textFldA.anchor.set(0.5);
@@ -137,6 +159,16 @@ export class SwipeContainer extends PIXI.Container {
         this.textFldC.anchor.set(0.5);
         AlignHelper.xCenterWindow(this.textFldC);
         this.textFldC.y = 650;
+
+        this.textFldD = this.addChild(new PIXI.Text(0, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:80})));
+        this.textFldD.anchor.set(0.5);
+        AlignHelper.xCenterWindow(this.textFldD);
+        this.textFldD.y = 800;
+
+        this.textFldE = this.addChild(new PIXI.Text(0, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:80})));
+        this.textFldE.anchor.set(0.5);
+        AlignHelper.xCenterWindow(this.textFldE);
+        this.textFldE.y = 950;
 
         this.shadowBox = this.addChild(GraphicsHelper.exDrawRect(0, 0, 100, 100, 40, {color:0xFF0000}));
         Utils.pivotCenter(this.shadowBox);
