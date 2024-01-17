@@ -1,9 +1,9 @@
 import { dataProvider } from './dataProvider.js';
 import Utils from './helper/Utils.js';
 import Easing from './helper/Easing.js';
-import { SwipeContainer } from './SwipeContainer.js';
 import GraphicsHelper from './helper/GraphicsHelper.js';
 import { CardContainer } from './CardContainer.js';
+import { SwipeContainer } from './SwipeContainer.js';
 import { SwipeContainer2 } from './SwipeContainer2.js';
 
 
@@ -29,14 +29,14 @@ export class ApplicationRoot extends PIXI.Container {
 
         // this.easeStudy();
         // this.cardContainer = this.addChild(new CardContainer());
-        this.swipeContainer = this.addChild(new SwipeContainer2());
+        this.swipeContainer = this.addChild(new SwipeContainer());
         this.txtFld = this.addChild(new PIXI.Text('Swipe event study', Utils.cloneTextStyle(dataProvider.baseStyle)));
         this.txtFld.anchor.set(0.5);
         this.txtFld.x = window.innerWidth / 2;
         this.txtFld.y = 100;
 
-        const grid = this.addChild(Utils.drawGrid(196/2));
-        grid.alpha = 0.5;
+        // const grid = this.addChild(Utils.drawGrid(196/2));
+        // grid.alpha = 0.5;
     }
 
     easeStudy(){

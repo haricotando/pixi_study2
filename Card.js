@@ -23,11 +23,15 @@ export class Card extends PIXI.Container {
         this.label = this.addChild(new PIXI.Text(index, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:50})));
         this.label.anchor.set(0.5);
         this.label.y = -100;
-        this.label2 = this.addChild(new PIXI.Text('00000', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:50})));
+        this.label2 = this.addChild(new PIXI.Text('00000', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
         this.label2.anchor.set(0.5);
-        this.label3 = this.addChild(new PIXI.Text('00000', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:50})));
+        this.label2.y = -30;
+        this.label3 = this.addChild(new PIXI.Text('00000', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
         this.label3.anchor.set(0.5);
-        this.label3.y = 100;
+        this.label3.y = 25;
+        this.label4 = this.addChild(new PIXI.Text('00000', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
+        this.label4.anchor.set(0.5);
+        this.label4.y = 80;
 
     }
 
