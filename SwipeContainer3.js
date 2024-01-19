@@ -5,7 +5,7 @@ import GraphicsHelper from './helper/GraphicsHelper.js';
 import { Card } from './Card.js';
 import Easing from './helper/Easing.js';
 
-export class SwipeContainer extends PIXI.Container {
+export class SwipeContainer3 extends PIXI.Container {
     /* ============================================================
         constructor
     ============================================================ */
@@ -13,7 +13,7 @@ export class SwipeContainer extends PIXI.Container {
         super();
         this.highestZ = 100;
         this.numOfCards = 20;
-        this.cardSpacing = 0;
+        this.cardSpacing = 90;
         // dataProvider.cardGeometries.baseWidth;
         // dataProvider.cardGeometries.baseWidth = 196;
         this.cardHolderWidth = 0;
@@ -39,17 +39,17 @@ export class SwipeContainer extends PIXI.Container {
         this.x = this.windowCenter;
         let cardHeight = dataProvider.cardGeometries.baseWidth * dataProvider.cardGeometries.ratio;
         this.textFldD.text = `${dataProvider.wHeight} / ${cardHeight}`;
-        this.cardHolder.y = dataProvider.wHeight - (cardHeight/1.2);
+        this.cardHolder.y = dataProvider.wHeight - (cardHeight/1.3);
         for(let i=0; i<this.numOfCards; i++){
             let card = this.cardHolder.addChild(new Card(i));
             const obj = {card:card, index:i}
-            card.x = i * dataProvider.cardGeometries.baseWidth + dataProvider.cardGeometries.baseWidth/2;
+            card.x = i * dataProvider.cardGeometries.baseWidth + dataProvider.cardGeometries.baseWidth/2 + (i * this.cardSpacing);
             this.cardList.push(obj)
         }
-        this.cardHolderWidth = this.cardList.length * dataProvider.cardGeometries.baseWidth - dataProvider.cardGeometries.baseWidth;
+        this.cardHolderWidth = (this.cardList.length-1) * (dataProvider.cardGeometries.baseWidth + this.cardSpacing);
         this.shadow.holderRight = 0 - this.cardHolderWidth;
 
-        this.cardHolder.addChild(GraphicsHelper.exDrawRect(dataProvider.cardGeometries.baseWidth/2, -500, this.cardHolderWidth, 100, false, {color:0xFF00FF}));
+        // this.cardHolder.addChild(GraphicsHelper.exDrawRect(dataProvider.cardGeometries.baseWidth/2, -500, this.cardHolderWidth, 100, false, {color:0xFF00FF}));
         
         // ===== swipe ticker関連
         this.initSwipeEvents();
@@ -101,7 +101,6 @@ export class SwipeContainer extends PIXI.Container {
         // this.textFldC.text = `holderX:${holderX}`;
         
         this.syncCards();
-        this.shadowBox.x = this.windowCenter-this.shadow.current/this.shadow.maxX*window.innerWidth;
     }
 
     onTouchEnd(event){
@@ -111,7 +110,7 @@ export class SwipeContainer extends PIXI.Container {
 
     syncCards(){
 
-        const cardMaxScale = 1.5;
+        const cardMaxScale = 1.4;
         const cardMaxYOffset = 120;
         let highestCard = undefined;
         let highestVal = 0;
@@ -120,10 +119,10 @@ export class SwipeContainer extends PIXI.Container {
             const card = this.cardList[i].card;
 
             // scale calc
-            const localEdge = dataProvider.cardGeometries.baseWidth * 2.5;
+            const localEdge = dataProvider.cardGeometries.baseWidth * 2.9
 
             // 画面中心0にオフセットする
-            const localX = this.cardHolder.x + (dataProvider.cardGeometries.baseWidth * i) + dataProvider.cardGeometries.baseWidth /2;
+            const localX = this.cardHolder.x + ((dataProvider.cardGeometries.baseWidth + this.cardSpacing) * i) + dataProvider.cardGeometries.baseWidth /2;
 
             let limitedLocalX = localX > localEdge ? localEdge : localX;
             limitedLocalX = limitedLocalX < 0-localEdge ? 0-localEdge : limitedLocalX;
@@ -136,18 +135,19 @@ export class SwipeContainer extends PIXI.Container {
             const positiveAmpli = localEdge - limitedLocalXAbs;
 
             // scale
-            const posScaleEased = Easing.easeOutSine(positiveAmpli, 1, cardMaxScale-1, localEdge);
+            const posScaleEased = Easing.easeInOutSine(positiveAmpli, 1, cardMaxScale-1, localEdge);
             const negScaleEased = Easing.easeInSine(negtiveAmpli, 1, cardMaxScale-1, localEdge);
+            const yEased = Easing.easeInSine(negtiveAmpli, 1, cardMaxScale-1, localEdge);
             card.scale.set(posScaleEased);
             // y
-            card.y = (negScaleEased-1) * 200;
+            card.y = (yEased-1) * 700;
             // rotation
-            card.rotation = (limitedLocalX/50) * PIXI.DEG_TO_RAD;
+            card.rotation = (limitedLocalX/70) * PIXI.DEG_TO_RAD;
             //cardMaxYOffset
 
             // card.label2.text= `localX: ${localX}`;
             // card.label3.text= `p: ${positiveAmpli} / ${Math.round(posScaleEased*100)/100}`;
-            // card.label4.text= `n: ${negtiveAmpli} / ${Math.round(negScaleEased*100)/100}`;
+            // card.label4.text= `${Math.round(card.y)}`;
 
             if(positiveAmpli > highestVal){
                 highestCard = card;
@@ -162,7 +162,7 @@ export class SwipeContainer extends PIXI.Container {
     }
 
     initDebugElement(){
-        this.bg = GraphicsHelper.exDrawRect(0, 0, window.innerWidth, window.innerHeight, true, {color:dataProvider.color.dark1});
+        this.bg = GraphicsHelper.exDrawRect(0, 0, window.innerWidth, window.innerHeight, false, {color:dataProvider.color.dark2});
         this.bg.x = 0-window.innerWidth/2;
         this.addChild(this.bg);
 
@@ -191,9 +191,6 @@ export class SwipeContainer extends PIXI.Container {
         // AlignHelper.xCenterWindow(this.textFldE);
         this.textFldE.y = 950;
 
-        this.shadowBox = this.addChild(GraphicsHelper.exDrawRect(0, 0, 100, 100, 40, {color:0xFF0000}));
-        Utils.pivotCenter(this.shadowBox);
-        this.shadowBox.y = 1000;
     }
 
 }

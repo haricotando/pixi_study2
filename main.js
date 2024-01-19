@@ -2,6 +2,9 @@ import { ApplicationRoot } from './ApplicationRoot.js';
 import { dataProvider } from './dataProvider.js';
 import Utils from './helper/Utils.js';
 
+
+console.log(PIXI.VERSION)
+
 /* ------------------------------------------------------------
     変数定義
 ------------------------------------------------------------ */
@@ -11,7 +14,7 @@ import Utils from './helper/Utils.js';
 ------------------------------------------------------------ */
 WebFont.load({
     google: {
-      families: ['Pangolin'],
+      families: ['Chewy', 'Acme', 'Changa One', 'Bowlby One SC', 'Kiwi Maru:500'],
     },
     
     active: () => {
@@ -25,12 +28,15 @@ WebFont.load({
   });
 
 function init(){
+
+    // gsap.registerPlugin(PixiPlugin);
+
     dataProvider.wWidth = window.innerWidth;
     dataProvider.wHeight = window.innerHeight;
     console.log(window.innerHeight)
     console.log(dataProvider.wHeight);
     let app = new PIXI.Application({
-        background: '#FFFFFF',
+        background: '#1A1F22',
         resizeTo: window
     });
     document.body.appendChild(app.view);

@@ -5,6 +5,7 @@ import GraphicsHelper from './helper/GraphicsHelper.js';
 import { CardContainer } from './CardContainer.js';
 import { SwipeContainer } from './SwipeContainer.js';
 import { SwipeContainer2 } from './SwipeContainer2.js';
+import { SwipeContainer3 } from './SwipeContainer3.js';
 
 
 export class ApplicationRoot extends PIXI.Container {
@@ -16,8 +17,13 @@ export class ApplicationRoot extends PIXI.Container {
         super();
 
 
+        // families: ['Chewy', 'Acme', 'Changa One', 'Bowlby One SC', 'Dela Gothic One', 'DotGothic16', 'Train One', 'Rampart One'],
         dataProvider.baseStyle = new PIXI.TextStyle({
-            fontFamily: 'Pangolin', fontSize: 100, fontWeight: 100,
+            fontFamily: 'Bowlby One SC', fontSize: 100, fontWeight: 100,
+        });
+
+        dataProvider.style.jp = new PIXI.TextStyle({
+            fontFamily: 'Kiwi Maru', fontSize: 90, fontWeight:500,
         });
 
         this.init();
@@ -29,7 +35,8 @@ export class ApplicationRoot extends PIXI.Container {
 
         // this.easeStudy();
         // this.cardContainer = this.addChild(new CardContainer());
-        this.swipeContainer = this.addChild(new SwipeContainer());
+        // this.swipeContainer = this.addChild(new SwipeContainer());
+        this.swipeContainer = this.addChild(new SwipeContainer3());
         this.txtFld = this.addChild(new PIXI.Text('Swipe event study', Utils.cloneTextStyle(dataProvider.baseStyle)));
         this.txtFld.anchor.set(0.5);
         this.txtFld.x = window.innerWidth / 2;

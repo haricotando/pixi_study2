@@ -6,7 +6,7 @@ export const dataProvider = {
         debug: true,
     },
 
-    baseStyle: {},
+    style: {},
     color: {
         dark1: 0x545550,
         dark2: 0x1A1F22,
@@ -14,7 +14,7 @@ export const dataProvider = {
     },
     cardGeometries: {
         baseWidth: 300,
-        ratio: 1.4, 
+        ratio: 1.5, 
     }
 };
 
