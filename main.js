@@ -25,6 +25,10 @@ WebFont.load({
   });
 
 function init(){
+    dataProvider.wWidth = window.innerWidth;
+    dataProvider.wHeight = window.innerHeight;
+    console.log(window.innerHeight)
+    console.log(dataProvider.wHeight);
     let app = new PIXI.Application({
         background: '#FFFFFF',
         resizeTo: window

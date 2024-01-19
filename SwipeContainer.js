@@ -16,8 +16,8 @@ export class SwipeContainer extends PIXI.Container {
         this.highestZ = 100;
         this.numOfCards = 10;
         this.cardSpacing = 0;
-        this.cardBaseWidth = 250;
-        // this.cardBaseWidth = 196;
+        dataProvider.cardGeometries.baseWidth;
+        // dataProvider.cardGeometries.baseWidth = 196;
         this.cardHolderWidth = 0;
         this.cardList = [];
         this.windowCenter = window.innerWidth / 2;
@@ -39,17 +39,19 @@ export class SwipeContainer extends PIXI.Container {
         this.cardHolder.sortableChildren = true;
         
         this.x = this.windowCenter;
-        this.cardHolder.y = 1400;
+        let cardHeight = dataProvider.cardGeometries.baseWidth * dataProvider.cardGeometries.ratio;
+        this.textFldD.text = `${dataProvider.wHeight} / ${cardHeight}`;
+        this.cardHolder.y = dataProvider.wHeight - (cardHeight/1.2);
         for(let i=0; i<this.numOfCards; i++){
             let card = this.cardHolder.addChild(new Card(i));
             const obj = {card:card, index:i}
-            card.x = i * this.cardBaseWidth + this.cardBaseWidth/2;
+            card.x = i * dataProvider.cardGeometries.baseWidth + dataProvider.cardGeometries.baseWidth/2;
             this.cardList.push(obj)
         }
-        this.cardHolderWidth = this.cardList.length * this.cardBaseWidth - this.cardBaseWidth;
+        this.cardHolderWidth = this.cardList.length * dataProvider.cardGeometries.baseWidth - dataProvider.cardGeometries.baseWidth;
         this.shadow.holderRight = 0 - this.cardHolderWidth;
 
-        this.cardHolder.addChild(GraphicsHelper.exDrawRect(this.cardBaseWidth/2, -300, this.cardHolderWidth, 100, false, {color:0xFF00FF}));
+        this.cardHolder.addChild(GraphicsHelper.exDrawRect(dataProvider.cardGeometries.baseWidth/2, -500, this.cardHolderWidth, 100, false, {color:0xFF00FF}));
         
         // ===== swipe ticker関連
         this.initSwipeEvents();
@@ -91,7 +93,7 @@ export class SwipeContainer extends PIXI.Container {
             this.shadow.current = Math.round((this.shadow.current + diff)*10)/10;
         }
         let holderX = Math.round(this.shadow.current / this.shadow.maxX * this.shadow.holderRight);
-        this.cardHolder.x = holderX - this.cardBaseWidth / 2;
+        this.cardHolder.x = holderX - dataProvider.cardGeometries.baseWidth / 2;
         
         // debug
         this.textFldA.style.fontSize = 60;
@@ -120,10 +122,10 @@ export class SwipeContainer extends PIXI.Container {
             const card = this.cardList[i].card;
 
             // scale calc
-            const localEdge = this.cardBaseWidth * 2.5;
+            const localEdge = dataProvider.cardGeometries.baseWidth * 2.5;
 
             // 画面中心0にオフセットする
-            const localX = this.cardHolder.x + (this.cardBaseWidth * i) + this.cardBaseWidth /2;
+            const localX = this.cardHolder.x + (dataProvider.cardGeometries.baseWidth * i) + dataProvider.cardGeometries.baseWidth /2;
 
             let limitedLocalX = localX > localEdge ? localEdge : localX;
             limitedLocalX = limitedLocalX < 0-localEdge ? 0-localEdge : limitedLocalX;
@@ -145,9 +147,9 @@ export class SwipeContainer extends PIXI.Container {
             card.rotation = (limitedLocalX/50) * PIXI.DEG_TO_RAD;
             //cardMaxYOffset
 
-            card.label2.text= `localX: ${localX}`;
-            card.label3.text= `p: ${positiveAmpli} / ${Math.round(posScaleEased*100)/100}`;
-            card.label4.text= `n: ${negtiveAmpli} / ${Math.round(negScaleEased*100)/100}`;
+            // card.label2.text= `localX: ${localX}`;
+            // card.label3.text= `p: ${positiveAmpli} / ${Math.round(posScaleEased*100)/100}`;
+            // card.label4.text= `n: ${negtiveAmpli} / ${Math.round(negScaleEased*100)/100}`;
 
             if(positiveAmpli > highestVal){
                 highestCard = card;
@@ -162,7 +164,7 @@ export class SwipeContainer extends PIXI.Container {
     }
 
     initDebugElement(){
-        this.bg = GraphicsHelper.exDrawRect(0, 0, window.innerWidth, window.innerHeight, true, {color:0xefefef});
+        this.bg = GraphicsHelper.exDrawRect(0, 0, window.innerWidth, window.innerHeight, true, {color:dataProvider.color.dark1});
         this.bg.x = 0-window.innerWidth/2;
         this.addChild(this.bg);
 
