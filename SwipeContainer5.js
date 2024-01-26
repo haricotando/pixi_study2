@@ -114,20 +114,29 @@ export class SwipeContainer5 extends PIXI.Container {
         const numOfSnaps = dataProvider.deck.length-1;
         const currentSnapId = Math.round(this.shadow.current / this.shadow.maxX * numOfSnaps);
         // 2. カードのスライド可能幅（可視化）
+        // const cardMaxRange = numOfSnaps * 50;
         const cardMaxRange = numOfSnaps * dataProvider.cardGeometries.baseWidth;
         
         this.textFldC.text = `SnapId: ${currentSnapId} / ${numOfSnaps}`;
 
         for (let i = 0; i < this.cardList.length; i++) {
             const card = this.cardList[i].card;
+            // 2
             const cardXMin = i * dataProvider.cardGeometries.baseWidth;
             const cardXMax = i * dataProvider.cardGeometries.baseWidth + cardMaxRange;
-            const cardCurrent = Math.round(this.shadow.current / this.shadow.maxX * cardMaxRange) + cardXMin;
-            card.x = cardMaxRange - cardCurrent;
+            const cardCurrent = 0 - Math.round(this.shadow.current / this.shadow.maxX * cardMaxRange) + cardXMin;
+            card.x = cardCurrent;
 
-            card.label2.text = `${dataProvider.cardGeometries.baseWidth} / ${cardMaxRange}`;
+            
+            // ease
+            const easedCardCurrent = Math.round(Easing.easeInOutSine(this.shadow.current, cardXMin, cardXMax, this.shadow.maxX));
+            
+
+
+
             card.label3.text = `${cardXMin} / ${cardXMax}`;
             card.label4.text = `${cardCurrent}`;
+            card.label5.text = `${easedCardCurrent}`;
         }
     }
 
