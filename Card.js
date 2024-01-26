@@ -7,7 +7,7 @@ export class Card extends PIXI.Container {
     /* ============================================================
         constructor
     ============================================================ */
-    constructor(index) {
+    constructor(index, cardId) {
         super();
 
         const cardWitdh = dataProvider.cardGeometries.baseWidth;
@@ -23,27 +23,26 @@ export class Card extends PIXI.Container {
 
 
 
-        this.label = this.addChild(new PIXI.Text('Dreadnote', Utils.cloneTextStyle(dataProvider.baseStyle, {fill:dataProvider.color.light1, align:'center', fontSize:35})));
+        this.label = this.addChild(new PIXI.Text(dataProvider.cards[cardId].name, Utils.cloneTextStyle(dataProvider.baseStyle, {fill:dataProvider.color.light1, align:'center', fontSize:35})));
         this.label.anchor.set(0.5);
         this.label.y = 90;
         
-        this.labelx = this.addChild(new PIXI.Text('このターン\nゴニョゴニョする\n', Utils.cloneTextStyle(dataProvider.style.jp, {fill:dataProvider.color.light1, align:'center', fontSize:22})));
+        this.labelx = this.addChild(new PIXI.Text(dataProvider.cards[cardId].text, Utils.cloneTextStyle(dataProvider.style.jp, {fill:dataProvider.color.light1, align:'center', fontSize:22})));
         this.labelx.anchor.set(0.5);
         this.labelx.y = 160;
-
-
-
-
         
-        // this.label2 = this.addChild(new PIXI.Text('日本語入力', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
-        // this.label2.anchor.set(0.5);
-        // this.label2.y = -30;
-        // this.label3 = this.addChild(new PIXI.Text('00000', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
-        // this.label3.anchor.set(0.5);
-        // this.label3.y = 25;
-        // this.label4 = this.addChild(new PIXI.Text('00000', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
-        // this.label4.anchor.set(0.5);
-        // this.label4.y = 0;
+        this.label2 = this.addChild(new PIXI.Text(`index: ${index}`, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
+        this.label2.anchor.set(0.5);
+        this.label2.y = -180;
+        this.label3 = this.addChild(new PIXI.Text('00000', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
+        this.label3.anchor.set(0.5);
+        this.label3.y = -120;
+        this.label4 = this.addChild(new PIXI.Text('00000', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
+        this.label4.anchor.set(0.5);
+        this.label4.y = -60;
+        this.label5 = this.addChild(new PIXI.Text('00000', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
+        this.label5.anchor.set(0.5);
+        this.label5.y = -0;
     }
 
     suicide(){

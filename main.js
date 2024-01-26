@@ -1,6 +1,7 @@
 import { ApplicationRoot } from './ApplicationRoot.js';
 import { dataProvider } from './dataProvider.js';
 import Utils from './helper/Utils.js';
+import AlignHelper from './helper/AlignHelper.js';
 
 
 console.log(PIXI.VERSION)
@@ -41,6 +42,12 @@ function init(){
     });
     document.body.appendChild(app.view);
     dataProvider.data.app = app;
+
+    dataProvider.wWidth = window.innerWidth;
+    dataProvider.wHeight = window.innerHeight;
+
+    AlignHelper.lockedScreenWidth = dataProvider.wWidth;
+    AlignHelper.lockedScreenHeight = dataProvider.wHeight;
     
     const applicationRoot = new ApplicationRoot(app);
     app.stage.addChild(applicationRoot);

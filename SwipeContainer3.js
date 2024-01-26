@@ -58,6 +58,10 @@ export class SwipeContainer3 extends PIXI.Container {
             this.onTickerHandler();
         });
     }
+
+    initDeck(){
+        dataProvider.deck = [0,0,0,1,2,2,2,3];
+    }
     
     // card.rotation = i * 10 * PIXI.DEG_TO_RAD
 

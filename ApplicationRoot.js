@@ -2,10 +2,8 @@ import { dataProvider } from './dataProvider.js';
 import Utils from './helper/Utils.js';
 import Easing from './helper/Easing.js';
 import GraphicsHelper from './helper/GraphicsHelper.js';
-import { CardContainer } from './CardContainer.js';
-import { SwipeContainer } from './SwipeContainer.js';
-import { SwipeContainer2 } from './SwipeContainer2.js';
-import { SwipeContainer3 } from './SwipeContainer3.js';
+import { SwipeContainer5 } from './SwipeContainer5.js';
+import { SwipeContainer4 } from './SwipeContainer4.js';
 
 
 export class ApplicationRoot extends PIXI.Container {
@@ -36,14 +34,15 @@ export class ApplicationRoot extends PIXI.Container {
         // this.easeStudy();
         // this.cardContainer = this.addChild(new CardContainer());
         // this.swipeContainer = this.addChild(new SwipeContainer());
-        this.swipeContainer = this.addChild(new SwipeContainer3());
-        this.txtFld = this.addChild(new PIXI.Text('Swipe event study', Utils.cloneTextStyle(dataProvider.baseStyle)));
+        // this.swipeContainer = this.addChild(new SwipeContainer4());
+        this.swipeContainer = this.addChild(new SwipeContainer5());
+        this.txtFld = this.addChild(new PIXI.Text('Swipe event study', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:90})));
         this.txtFld.anchor.set(0.5);
         this.txtFld.x = window.innerWidth / 2;
         this.txtFld.y = 100;
 
-        // const grid = this.addChild(Utils.drawGrid(196/2));
-        // grid.alpha = 0.5;
+        const grid = this.addChild(Utils.drawGrid(196/2));
+        grid.alpha = 0.5;
     }
 
     easeStudy(){
