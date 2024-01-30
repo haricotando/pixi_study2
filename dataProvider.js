@@ -14,7 +14,7 @@ export const dataProvider = {
     },
 
     cardGeometries: {
-        shadowWidth: 400,
+        shadowWidth: 450,
         baseWidth: 450,
         ratio: 1.5, 
     },

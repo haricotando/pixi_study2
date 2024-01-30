@@ -47,6 +47,7 @@ export class SwipeContainer5 extends PIXI.Container {
 
     initDeck(){
         this.deck = this.addChild(new PIXI.Container());
+        this.deck.sortableChildren = true;
 
         let cardHeight = Math.round(dataProvider.cardGeometries.baseWidth * dataProvider.cardGeometries.ratio);
         console.log("🚀 ~ SwipeContainer5 ~ initDeck ~ cardHeight:", cardHeight)
@@ -116,6 +117,9 @@ export class SwipeContainer5 extends PIXI.Container {
         const numOfSnaps = dataProvider.deck.length-1;
         // レイヤーを手前に上げるのはこれ
         const currentSnapId = Math.round(this.shadow.current / this.shadow.maxX * numOfSnaps);
+        const highestCard = this.cardList[currentSnapId].card;
+
+
         // 2. カードのスライド可能幅（可視化）
         const cardMaxRange = numOfSnaps * dataProvider.cardGeometries.shadowWidth;
 
@@ -125,6 +129,7 @@ export class SwipeContainer5 extends PIXI.Container {
 
         for (let i = 0; i < this.cardList.length; i++) {
             const card = this.cardList[i].card;
+            card.zIndex = i+i;
             // 2
             const cardXMin = i * dataProvider.cardGeometries.shadowWidth;
             const cardXMax = i * dataProvider.cardGeometries.shadowWidth + cardMaxRange;
@@ -143,6 +148,9 @@ export class SwipeContainer5 extends PIXI.Container {
             const easedScale = (cardMaxRange - Math.round(easedCardCurrentAbs)) / cardMaxRange * 1;
             card.scale.set(easedScale);
         }
+
+        highestCard.zIndex = 100;
+        this.deck.sortChildren();        
     }
 
     onTouchEnd(event){
