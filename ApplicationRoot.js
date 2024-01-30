@@ -41,8 +41,8 @@ export class ApplicationRoot extends PIXI.Container {
         this.txtFld.x = window.innerWidth / 2;
         this.txtFld.y = 100;
 
-        const grid = this.addChild(Utils.drawGrid(196/2));
-        grid.alpha = 0.5;
+        // const grid = this.addChild(Utils.drawGrid(196/2));
+        // grid.alpha = 0.5;
     }
 
     easeStudy(){

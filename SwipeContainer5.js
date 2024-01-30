@@ -14,7 +14,7 @@ export class SwipeContainer5 extends PIXI.Container {
         
         this.cardList = [];
         this.highestZ = 100;
-        this.cardSpacing = 0;
+        // this.cardSpacing = 100;
         this.cardHolderWidth = 0;
         this.windowCenter = dataProvider.wWidth / 2;
         this.x = this.windowCenter;
@@ -26,6 +26,7 @@ export class SwipeContainer5 extends PIXI.Container {
         this.initDeck();
         
         this.shadow = {
+            decel:0.2,
             minX:0,
             maxX:200 * dataProvider.deck.length,
             tapStart:0,
@@ -46,13 +47,17 @@ export class SwipeContainer5 extends PIXI.Container {
 
     initDeck(){
         this.deck = this.addChild(new PIXI.Container());
-        this.deck.y = dataProvider.wHeight - 250;
+
+        let cardHeight = Math.round(dataProvider.cardGeometries.baseWidth * dataProvider.cardGeometries.ratio);
+        console.log("🚀 ~ SwipeContainer5 ~ initDeck ~ cardHeight:", cardHeight)
+        
+        this.deck.y = dataProvider.wHeight - (cardHeight/2 + 10);
         dataProvider.deck = [0,0,0,1,2,2,3];
         for(let i=0; i<dataProvider.deck.length; i++){
             let card = this.deck.addChild(new Card(i, dataProvider.deck[i]));
             const obj = {card:card, index:i}
             // このxに意味はない
-            card.x = dataProvider.cardGeometries.baseWidth * i;
+            card.x = dataProvider.cardGeometries.shadowWidth * i;
             // card.y = (i*50);
             this.cardList.push(obj);
         }
@@ -84,59 +89,59 @@ export class SwipeContainer5 extends PIXI.Container {
     
     onTickerHandler(){
         // 慣性不要な場合は1へ
-        const decel = 0.2;
-        let diff = (this.shadow.dest - this.shadow.current) * decel;
+        let diff = (this.shadow.dest - this.shadow.current) * this.shadow.decel;
         if(Math.abs(this.shadow.current - this.shadow.dest) < 1){
             this.shadow.current = this.shadow.dest;
         }else{
             this.shadow.current = Math.round((this.shadow.current + diff)*10)/10;
         }
 
-        this.textFldA.text = `${this.shadow.minX} / ${this.shadow.current} / ${this.shadow.maxX}`;
+        // Debug要素
+        this.textFldA.text = `Shadow: ${this.shadow.minX} / ${this.shadow.current} / ${this.shadow.maxX}`;
+        let tickerX = Math.round(this.shadow.current / this.shadow.maxX * (0-dataProvider.wWidth/2));
+        this.tickerSymbol.x = tickerX;
 
         /*
             1. 比率ベース軸で計算しているのか（＋になる）
             2. 可視化の実スケールで計算しているのか（ーになる）
+
             1で計算した内容を可視化するスケールに落とす、2の後に1をやらない
             どちらをやってるか注意する
         */
 
         /*
-            2. debug用Tickerの可視化
-        */
-        let tickerX = Math.round(this.shadow.current / this.shadow.maxX * (0-dataProvider.wWidth/2));
-        this.tickerSymbol.x = tickerX;
-
-        /* 
             1. ベースとなるスナップ数（０〜 length-1 になるはず）
             可視化時は　対象の移動可能範囲 min / max * これ になる
         */
         const numOfSnaps = dataProvider.deck.length-1;
+        // レイヤーを手前に上げるのはこれ
         const currentSnapId = Math.round(this.shadow.current / this.shadow.maxX * numOfSnaps);
         // 2. カードのスライド可能幅（可視化）
-        // const cardMaxRange = numOfSnaps * 50;
-        const cardMaxRange = numOfSnaps * dataProvider.cardGeometries.baseWidth;
+        const cardMaxRange = numOfSnaps * dataProvider.cardGeometries.shadowWidth;
+
         
+        this.textFldB.text = `cardMaxRange: ${cardMaxRange}`;
         this.textFldC.text = `SnapId: ${currentSnapId} / ${numOfSnaps}`;
 
         for (let i = 0; i < this.cardList.length; i++) {
             const card = this.cardList[i].card;
             // 2
-            const cardXMin = i * dataProvider.cardGeometries.baseWidth;
-            const cardXMax = i * dataProvider.cardGeometries.baseWidth + cardMaxRange;
-            const cardCurrent = 0 - Math.round(this.shadow.current / this.shadow.maxX * cardMaxRange) + cardXMin;
+            const cardXMin = i * dataProvider.cardGeometries.shadowWidth;
+            const cardXMax = i * dataProvider.cardGeometries.shadowWidth + cardMaxRange;
+            const cardCurrentBase =  Math.round(this.shadow.current / this.shadow.maxX * cardMaxRange);
+            const cardCurrent = 0 - cardCurrentBase + cardXMin;
+            const isPlus = cardCurrent > 0 ? true : false;
+            
+            const easedCardCurrentAbs = Easing.easeInSine(Math.abs(cardCurrent), 0, cardMaxRange, cardMaxRange);
+
             card.x = cardCurrent;
+            card.y = easedCardCurrentAbs/2;
 
-            
-            // ease
-            const easedCardCurrent = Math.round(Easing.easeInOutSine(this.shadow.current, cardXMin, cardXMax, this.shadow.maxX));
-            
-
-
-
-            card.label3.text = `${cardXMin} / ${cardXMax}`;
-            card.label4.text = `${cardCurrent}`;
-            card.label5.text = `${easedCardCurrent}`;
+            const scaled = cardMaxRange - easedCardCurrentAbs;
+            const easedCardCurrent = isPlus ? easedCardCurrentAbs : 0 - easedCardCurrentAbs;
+            card.rotation = (easedCardCurrent/cardMaxRange*180) * PIXI.DEG_TO_RAD;
+            const easedScale = (cardMaxRange - Math.round(easedCardCurrentAbs)) / cardMaxRange * 1;
+            card.scale.set(easedScale);
         }
     }
 
@@ -172,7 +177,7 @@ export class SwipeContainer5 extends PIXI.Container {
 
         this.tickerSymbol = this.addChild(GraphicsHelper.exDrawRect(0,0,100,100, false, {color:0xFFFFFF}))
         this.tickerSymbol.tint = 0x333333;
-        this.tickerSymbol.y = dataProvider.wHeight - 500;
+        this.tickerSymbol.y = dataProvider.wHeight - 800;
         Utils.pivotCenter(this.tickerSymbol);
 
     }

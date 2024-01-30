@@ -18,7 +18,7 @@ export class Card extends PIXI.Container {
         let lim = this.addChild(GraphicsHelper.exDrawRoundedRect(0, 0, cardWitdh-30, cardHeight-30, 10, {color:dataProvider.color.dark2, width:5}));
         Utils.pivotCenter(lim);
         
-        let bottomBG = this.addChild(GraphicsHelper.exDrawRoundedRect(0, 135, cardWitdh-30, cardHeight/3, 10, {color:dataProvider.color.dark2, width:5}, {color:dataProvider.color.dark2}));
+        let bottomBG = this.addChild(GraphicsHelper.exDrawRoundedRect(0, cardHeight/3-30/2, cardWitdh-30, cardHeight/3, 10, {color:dataProvider.color.dark2, width:5}, {color:dataProvider.color.dark2}));
         Utils.pivotCenter(bottomBG);
 
 
@@ -34,15 +34,21 @@ export class Card extends PIXI.Container {
         this.label2 = this.addChild(new PIXI.Text(`index: ${index}`, Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
         this.label2.anchor.set(0.5);
         this.label2.y = -180;
-        this.label3 = this.addChild(new PIXI.Text('00000', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
+        this.label3 = this.addChild(new PIXI.Text('-', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
         this.label3.anchor.set(0.5);
-        this.label3.y = -120;
-        this.label4 = this.addChild(new PIXI.Text('00000', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
+        this.label3.y = -140;
+        this.label4 = this.addChild(new PIXI.Text('-', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
         this.label4.anchor.set(0.5);
-        this.label4.y = -60;
-        this.label5 = this.addChild(new PIXI.Text('00000', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
+        this.label4.y = -100;
+        this.label5 = this.addChild(new PIXI.Text('-', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
         this.label5.anchor.set(0.5);
-        this.label5.y = -0;
+        this.label5.y = -60;
+        this.label6 = this.addChild(new PIXI.Text('-', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
+        this.label6.anchor.set(0.5);
+        this.label6.y = -20;
+        this.label7 = this.addChild(new PIXI.Text('-', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:30})));
+        this.label7.anchor.set(0.5);
+        this.label7.y = 20;
     }
 
     suicide(){

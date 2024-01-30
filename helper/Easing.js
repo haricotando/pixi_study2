@@ -6,8 +6,8 @@ class Easing {
 
     /*  
         t: current time
-        b: begInnIng value
-        c: change In value
+        b: begining value
+        c: change in value
         d: duration
     */	
 	
