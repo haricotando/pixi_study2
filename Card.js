@@ -10,16 +10,26 @@ export class Card extends PIXI.Container {
     constructor(index, cardId) {
         super();
 
+        this.isDragging = false;
+        this.index = index;
+
         const cardWitdh = dataProvider.cardGeometries.baseWidth;
         let cardHeight = Math.round(cardWitdh * dataProvider.cardGeometries.ratio);
+        this.selected = this.addChild(GraphicsHelper.exDrawRoundedRect(0, 0, cardWitdh+20, cardHeight+20, 30, {color:dataProvider.color.dark1, width:2}, {color:0xFFFFFF}));
+        Utils.pivotCenter(this.selected);
+        this.selected.visible = false;
+
         this.card = this.addChild(GraphicsHelper.exDrawRoundedRect(0, 0, cardWitdh, cardHeight, 20, {color:0x333333}, {color:dataProvider.color.light1}));
         Utils.pivotCenter(this.card);
         
+
         let lim = this.addChild(GraphicsHelper.exDrawRoundedRect(0, 0, cardWitdh-30, cardHeight-30, 10, {color:dataProvider.color.dark2, width:5}));
         Utils.pivotCenter(lim);
         
         let bottomBG = this.addChild(GraphicsHelper.exDrawRoundedRect(0, cardHeight/3-30/2, cardWitdh-30, cardHeight/3, 10, {color:dataProvider.color.dark2, width:5}, {color:dataProvider.color.dark2}));
         Utils.pivotCenter(bottomBG);
+        
+        
 
 
 

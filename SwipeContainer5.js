@@ -18,6 +18,7 @@ export class SwipeContainer5 extends PIXI.Container {
         this.cardHolderWidth = 0;
         this.windowCenter = dataProvider.wWidth / 2;
         this.x = this.windowCenter;
+        this.isCardSelected = false;
 
         this.bg = GraphicsHelper.exDrawRect(0, 0, window.innerWidth, window.innerHeight, false, {color:dataProvider.color.light1});
         this.bg.x = 0-window.innerWidth/2;
@@ -29,10 +30,13 @@ export class SwipeContainer5 extends PIXI.Container {
             decel:0.2,
             minX:0,
             maxX:200 * dataProvider.deck.length,
-            tapStart:0,
-            dest:0,
+            tapStartX:0,
+            tapStartY:0,
+            destX:0,
+            destY:0,
             current:0,
-            last:0,
+            lastX:0,
+            lastY:0,
         };
 
         this.initDebugElement();
@@ -75,24 +79,57 @@ export class SwipeContainer5 extends PIXI.Container {
     }
     
     onTouchStart(event){
-        this.shadow.tapStart = event.data.global.x;
-        this.shadow.last = this.shadow.dest;
+        this.shadow.tapStartX = event.data.global.x;
+        this.shadow.tapStartY = event.data.global.y;
+        this.shadow.lastX = this.shadow.destX;
+        this.shadow.lastY = this.shadow.destY;
         this.tickerSymbol.tint = 0xFFFF00;
     }
     
     onTouchMove(event){
-        const diff = event.data.global.x - this.shadow.tapStart;
-        let tmp = this.shadow.last - diff;
+        let diffX = event.data.global.x - this.shadow.tapStartX;
+        const diffY = event.data.global.y - this.shadow.tapStartY;
+
+        this.textFldD.text = `Y: ${diffY}`;
+        this.textFldE.text = `X: ${diffX}`;
+
+        const currentCard = this.cardList[this.currentSnapId].card;
+        let selectedDest = 0;
+        if(diffY < -200){
+            currentCard.isDragging = true;
+            currentCard.y = diffY;
+            currentCard.label5.text = diffY;
+            this.isCardSelected = true;
+            const shadowPerIndex = this.shadow.maxX / (dataProvider.deck.length-1);
+            selectedDest = Math.round(currentCard.index * shadowPerIndex);
+            currentCard.selected.visible = true;
+        }else{
+            currentCard.isDragging = false;
+            this.isCardSelected = false;
+            currentCard.selected.visible = false;
+        }
+
+        if(this.isCardSelected){
+            diffX = diffX / 5;
+        }
+        let tmp = this.shadow.lastX - diffX;
         tmp = tmp < this.shadow.minX ? this.shadow.minX : tmp;
         tmp = tmp > this.shadow.maxX ? this.shadow.maxX : tmp;
-        this.shadow.dest = tmp;
+        this.shadow.destX = this.isCardSelected ? selectedDest : tmp;
+        // this.shadow.destX = tmp;
+
+        
+        
+
+        // this.shadow.destX = tmp;
     }
     
     onTickerHandler(){
-        // 慣性不要な場合は1へ
-        let diff = (this.shadow.dest - this.shadow.current) * this.shadow.decel;
-        if(Math.abs(this.shadow.current - this.shadow.dest) < 1){
-            this.shadow.current = this.shadow.dest;
+        // 調整入れても良い
+        let diff = (this.shadow.destX - this.shadow.current) * (this.isCardSelected ? 0.1 : this.shadow.decel);
+        // let diff = (this.shadow.destX - this.shadow.current) * this.shadow.decel;
+        if(Math.abs(this.shadow.current - this.shadow.destX) < 1){
+            this.shadow.current = this.shadow.destX;
         }else{
             this.shadow.current = Math.round((this.shadow.current + diff)*10)/10;
         }
@@ -116,16 +153,15 @@ export class SwipeContainer5 extends PIXI.Container {
         */
         const numOfSnaps = dataProvider.deck.length-1;
         // レイヤーを手前に上げるのはこれ
-        const currentSnapId = Math.round(this.shadow.current / this.shadow.maxX * numOfSnaps);
-        const highestCard = this.cardList[currentSnapId].card;
-
+        this.currentSnapId = Math.round(this.shadow.current / this.shadow.maxX * numOfSnaps);
+        const highestCard = this.cardList[this.currentSnapId].card;
 
         // 2. カードのスライド可能幅（可視化）
         const cardMaxRange = numOfSnaps * dataProvider.cardGeometries.shadowWidth;
 
         
         this.textFldB.text = `cardMaxRange: ${cardMaxRange}`;
-        this.textFldC.text = `SnapId: ${currentSnapId} / ${numOfSnaps}`;
+        this.textFldC.text = `SnapId: ${this.currentSnapId} / ${numOfSnaps}`;
 
         for (let i = 0; i < this.cardList.length; i++) {
             const card = this.cardList[i].card;
@@ -140,13 +176,22 @@ export class SwipeContainer5 extends PIXI.Container {
             const easedCardCurrentAbs = Easing.easeInSine(Math.abs(cardCurrent), 0, cardMaxRange, cardMaxRange);
 
             card.x = cardCurrent;
-            card.y = easedCardCurrentAbs/2;
+
+            const easedScale = (cardMaxRange - Math.round(easedCardCurrentAbs)) / cardMaxRange * 1;
+            
+            if(!card.isDragging){
+                card.y = easedCardCurrentAbs/2;
+                // card.selected.visible = false;
+                card.scale.set(easedScale);
+            }
+            // highestCard.selected.visible = true;
 
             const scaled = cardMaxRange - easedCardCurrentAbs;
             const easedCardCurrent = isPlus ? easedCardCurrentAbs : 0 - easedCardCurrentAbs;
             card.rotation = (easedCardCurrent/cardMaxRange*180) * PIXI.DEG_TO_RAD;
-            const easedScale = (cardMaxRange - Math.round(easedCardCurrentAbs)) / cardMaxRange * 1;
-            card.scale.set(easedScale);
+            //
+            card.label3.text = `${this.shadow.minX} / ${this.shadow.maxX} | ${this.shadow.current}`;
+            card.label4.text = `${cardXMin} / ${cardXMax}`;
         }
 
         highestCard.zIndex = 100;
