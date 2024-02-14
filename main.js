@@ -15,7 +15,7 @@ console.log(PIXI.VERSION)
 ------------------------------------------------------------ */
 WebFont.load({
     google: {
-      families: ['Chewy', 'Acme', 'Changa One', 'Bowlby One SC', 'Kiwi Maru:500'],
+      families: ['Teko:300,500,700'],
     },
     
     active: () => {

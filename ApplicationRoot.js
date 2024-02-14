@@ -2,8 +2,10 @@ import { dataProvider } from './dataProvider.js';
 import Utils from './helper/Utils.js';
 import Easing from './helper/Easing.js';
 import GraphicsHelper from './helper/GraphicsHelper.js';
-import { SwipeContainer5 } from './SwipeContainer5.js';
-import { SwipeContainer4 } from './SwipeContainer4.js';
+import { CardContainer } from './CardContainer.js';
+import { SceneNeutral } from './Scenes/SceneNeutral.js';
+import { SceneRest } from './scenes/SceneRest.js';
+import { SceneEncount } from './scenes/SceneEncount.js';
 
 
 export class ApplicationRoot extends PIXI.Container {
@@ -13,64 +15,92 @@ export class ApplicationRoot extends PIXI.Container {
     ============================================================ */
     constructor(appScreen) {
         super();
-
-
-        // families: ['Chewy', 'Acme', 'Changa One', 'Bowlby One SC', 'Dela Gothic One', 'DotGothic16', 'Train One', 'Rampart One'],
-        dataProvider.baseStyle = new PIXI.TextStyle({
-            fontFamily: 'Bowlby One SC', fontSize: 100, fontWeight: 100,
-        });
-
-        dataProvider.style.jp = new PIXI.TextStyle({
-            fontFamily: 'Kiwi Maru', fontSize: 90, fontWeight:500,
-        });
-
+        this.initDebugAssets();
         this.init();
     }
 
     init(){
+        this.initDefaultDeck();
 
- 
-
-        // this.easeStudy();
-        // this.cardContainer = this.addChild(new CardContainer());
-        // this.swipeContainer = this.addChild(new SwipeContainer());
-        // this.swipeContainer = this.addChild(new SwipeContainer4());
-        this.swipeContainer = this.addChild(new SwipeContainer5());
-        this.txtFld = this.addChild(new PIXI.Text('Swipe event study', Utils.cloneTextStyle(dataProvider.baseStyle, {fontSize:90})));
-        this.txtFld.anchor.set(0.5);
-        this.txtFld.x = window.innerWidth / 2;
-        this.txtFld.y = 100;
-
-        // const grid = this.addChild(Utils.drawGrid(196/2));
-        // grid.alpha = 0.5;
+        this.setSceneNeutral();
+        // this.setSceneEncount();
+        // this.updatePlayerStats();
     }
 
-    easeStudy(){
-        let time = 0;
-        let box = this.addChild(GraphicsHelper.exDrawRect(0, 0, 100, 100, true, {color:0xFF00FF}));
-        Utils.pivotCenter(box);
-        box.x = 100;
-        box.y = 100;
+    setSceneNeutral(){
+        this.txtFldScene.text = 'Scene: Neutral';
+        this.currentScene = this.addChild(new SceneNeutral());
+    }
 
-        let StartVal = 0;
-        let endVal = 500;
+    setSceneForward(){
+        this.removeChild(this.currentScene);
+        this.txtFldScene.text = 'Scene: Forward';
+        dataProvider.playerStats.oxigen -= 10;
+
+        // Dice回し
+        gsap.timeline()
+            .set(this.txtFldScene, {alpha:0.1})
+            .to(this.txtFldScene, {alpha:1, duration:0.5, ease:'linear', repeat:2})
+            .call(()=>{
+                let result = Math.round(Math.random()*2);
+                switch(result){
+                    case 0:
+                        this.setSceneNeutral();
+                        break;
+                    case 1:
+                        this.setSceneEncount();
+                        break;
+                    case 2:
+                        this.setSceneEncount();
+                        break;
+                }
+            })
+            .call(()=>{
+                this.updatePlayerStats();
+            })
+    }
+
+    setSceneRest(){
+        this.removeChild(this.currentScene);
+        this.txtFldScene.text = 'Scene: Rest';
+        this.currentScene = this.addChild(new SceneRest());
+    }
+
+    setSceneEncount(){
+        this.removeChild(this.currentScene);
+        this.txtFldScene.text = 'Scene: Encount';
+        this.currentScene = this.addChild(new SceneEncount());
+    }
 
 
-        const ticker = dataProvider.data.app.ticker;
-        ticker.add((delta) => {
-            // this.box.x += 1;
-            if(time < 100){
-                time++;
-                /*  
-                t: current time
-                b: begInnIng value
-                c: change In value
-                d: duration
-                */
-               let result = Easing.easeInOutQuad(time, 500, -300, 100);
-               console.log(result);
-               box.x = result;
-            }
+
+
+    initDefaultDeck(){
+        dataProvider.deck = [0,2,0,1,2,2,3,1,2,3];
+    }
+
+    updatePlayerStats(){
+        this.txtFldPlayerStats.text = `HP: ${dataProvider.playerStats.hp} / Oxi: ${dataProvider.playerStats.oxigen}  - Cards: ${dataProvider.deck.length}`
+    }
+
+    initDebugAssets(){
+
+        dataProvider.style.base = new PIXI.TextStyle({
+            fontFamily: 'Teko', fontSize: 100, fontWeight: 500, fill:0xFFFFFF,
         });
+
+        dataProvider.style.jp = new PIXI.TextStyle({
+            fontFamily: 'Teko', fontSize: 50, fontWeight:500, fill:0xFFFFFF,
+        });
+
+        this.txtFldScene = this.addChild(new PIXI.Text('Scene: ', Utils.cloneTextStyle(dataProvider.style.base, {fontSize:90})));
+        this.txtFldScene.anchor.set(0.5);
+        this.txtFldScene.x = window.innerWidth / 2;
+        this.txtFldScene.y = 100;
+        //
+        this.txtFldPlayerStats = this.addChild(new PIXI.Text('PlayerStats:', Utils.cloneTextStyle(dataProvider.style.base, {fontSize:50})));
+        this.txtFldPlayerStats.anchor.set(0.5);
+        this.txtFldPlayerStats.x = window.innerWidth / 2;
+        this.txtFldPlayerStats.y = 200;
     }
 }
