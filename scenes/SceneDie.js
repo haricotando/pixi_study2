@@ -3,7 +3,7 @@ import Utils from '../helper/Utils.js';
 import { dataProvider } from '../dataProvider.js';
 import GraphicsHelper from '../helper/GraphicsHelper.js';
 
-export class SceneNeutral extends PIXI.Container {
+export class SceneDie extends PIXI.Container {
     /* ============================================================
         constructor
     ============================================================ */
@@ -17,28 +17,9 @@ export class SceneNeutral extends PIXI.Container {
         let btnForward = this.addButton('Foward..');
         btnForward.y = 500;
 
-        let btnRest = this.addButton('Rest..');
-        btnRest.y = 650;
-
-        let btnPortal = this.addButton('Portal..');
-        btnPortal.y = 800;
-
-        // let btnRest = this.addButton('Rest');
-        // btnRest.x = 350;
-        // btnRest.y = 300;
-
-        // let btnPortal = this.addButton('Portal');
-        // btnPortal.x = 600;
-        // btnPortal.y = 300;
-
         btnForward.on('touchstart', (event) => {
             this.parent.setSceneForward();
         });
-
-        btnRest.on('touchstart', (event) => {
-            this.parent.setSceneRest();
-        });
-        
         
     }
     

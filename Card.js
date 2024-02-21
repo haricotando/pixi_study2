@@ -12,43 +12,39 @@ export class Card extends PIXI.Container {
     constructor(index, cardId) {
         super();
 
+        const card = dataProvider.cards[cardId];
+
         const cardWitdh = dataProvider.cardGeometries.baseWidth;
         let cardHeight = Math.round(cardWitdh * dataProvider.cardGeometries.ratio);
         this.background = this.addChild(GraphicsHelper.exDrawRect(0, 0, cardWitdh, cardHeight, false, {color:0xFFFFFF}));
 
-        this.label = this.addChild(new PIXI.Text(dataProvider.cards[cardId].name, Utils.cloneTextStyle(dataProvider.style.base, {fill:dataProvider.color.dark1, align:'center', fontSize:35})));
+        this.label = this.addChild(new PIXI.Text(card.name, Utils.cloneTextStyle(dataProvider.style.base, {fill:dataProvider.color.dark1, align:'center', fontWeight:500, fontSize:45})));
         this.label.anchor.set(0.5);
         this.label.x = cardWitdh / 2;
         this.label.y = 40;
-        
-        this.labelCost = this.addChild(new PIXI.Text('cost: ' + dataProvider.cards[cardId].cost, Utils.cloneTextStyle(dataProvider.style.base, {fill:dataProvider.color.dark1, align:'center', fontSize:35})));
-        this.labelCost.anchor.set(0.5);
-        this.labelCost.x = cardWitdh / 2;
-        this.labelCost.y = 100;
-        
-        this.labelMessage = this.addChild(new PIXI.Text('', Utils.cloneTextStyle(dataProvider.style.base, {fill:dataProvider.color.dark1, align:'center', fontSize:35})));
-        let messageVal = dataProvider.cards[cardId].attack ? `at: ${dataProvider.cards[cardId].attack}` : '';
-        let def = dataProvider.cards[cardId].defence ? `df: ${dataProvider.cards[cardId].defence}` : '';
-        this.labelMessage.anchor.set(0.5);
-        this.labelMessage.x = cardWitdh / 2;
-        this.labelMessage.text = messageVal + def;
-        this.labelMessage.y = 150;
 
-        // this.initEvents();
+        this.labelVal = this.addChild(new PIXI.Text('--', Utils.cloneTextStyle(dataProvider.style.base, {fill:dataProvider.color.dark1, align:'center', fontWeight:500, fontSize:80})));
+        this.labelVal.anchor.set(0.5);
+        this.labelVal.x = cardWitdh / 2;
+        this.labelVal.y = 100;
+        
+        this.labelText = this.addChild(new PIXI.Text('', Utils.cloneTextStyle(dataProvider.style.base, {fill:dataProvider.color.dark1, align:'center', fontWeight:300, fontSize:40})));
+        this.labelText.anchor.set(0.5);
+        this.labelText.x = cardWitdh / 2;
+        this.labelText.y = 170;
+
+        switch(card.name){
+            case 'Attack':
+                this.labelVal.text = card.attack;
+                break;
+            case 'Defence':
+                this.labelVal.text = card.defence;
+                break;
+            case 'Counter':
+                this.labelVal.text = card.attack;
+                let dodgeVal = card.probability * 100;
+                this.labelText.text = `Dodge: ${dodgeVal}%`;
+                break;
+        }
     }
-
-    // initEvents(){
-    //     this.interactive = true;
-    //     this.on('touchstart', (event) => {
-    //         this.clickHandler();
-    //     });
-    // }
-
-    /* ------------------------------------------------------------
-        KeyPadContainer / KeyPads
-    ------------------------------------------------------------ */
-    // clickHandler(event){
-    //     console.log(this.parent.parent)
-    //     this.parent.parent.cardSelectHanadler(index, cardId);
-    // }
 }

@@ -21,26 +21,42 @@ export const dataProvider = {
 
     cards:[
         // Attack cards
-        {   name:   'Attack',
-            cost:   1,
-            attack: 3,
-            text:   'ダメージを与える',
-            image:  'path_to_image',
+        
+        {   name:       'Attack',
+            cost:       2,
+            attack:     5,
+            defence:    0,
+            text:       'ダメージを与える',
+            image:      'path_to_image',
         },
         
-        {   name:   'Hard attack',
-            cost:   2,
-            attack: 5,
-            text:   'ダメージを与える',
-            image:  'path_to_image',
-        },
-
         {   name:       'Defence',
             cost:       1,
+            attack:     0,
             defence:    4,
             text:       'ガードを得る',
             image:      'path_to_image',
         },
+
+        {   name:       'Counter',
+            cost:       1,
+            attack:     4,
+            defence:    0,
+            probability:0.4,    
+            text:       'ダメージを与える',
+            image:      'path_to_image',
+        },
+
+        {   name:       'Shield Bash',
+            cost:       1,
+            attack:     1,
+            defence:    0,
+            probability:0.4,    
+            text:       'ダメージを与える',
+            image:      'path_to_image',
+        },        
+
+
 
         {   name:       'Portal',
             cost:       2,
@@ -52,8 +68,8 @@ export const dataProvider = {
     enemy:[
         {
             name:       'Root',
-            hp:         8,
-            attack:     [2, 2, 2, 2, 4, 4, 8],
+            hp:         16,
+            attack:     [2, 2, 2, 4, 4, 6],
             defence:    2,
         }
     ],
@@ -62,9 +78,14 @@ export const dataProvider = {
     // Player status管理
     playerStats:
     {
-        hp: 20,
-        maxHp: 40,
+        hp:     10,
+        maxHp:  40,
         oxigen: 100,
+        food:   10,
+    },
+    gameStats:
+    {
+        dungeon: 1,
     }
 };
 

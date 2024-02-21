@@ -26,7 +26,7 @@ export class CardContainer extends PIXI.Container {
         this.selectedCard = this.addChild(new Card(index, cardId));
         Utils.pivotCenter(this.selectedCard);
         this.selectedCard.x = dataProvider.wWidth / 2;
-        this.selectedCard.y = 700;
+        this.selectedCard.y = -120;
 
         this.selectedCard.interactive = true;
         this.selectedCard.on('touchstart', (event) => {
@@ -55,7 +55,7 @@ export class CardContainer extends PIXI.Container {
         let posY= 0;
 
         this.cardHolder = this.addChild(new PIXI.Container());
-        this.cardHolder.y = 900;
+        // this.cardHolder.y = 900;
         for(let i=0; i<dataProvider.deck.length; i++){
             let card  = this.cardHolder.addChild(new Card(i, dataProvider.deck[i]));
             card.x = posX;
