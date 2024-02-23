@@ -22,7 +22,8 @@ export const dataProvider = {
     cards:[
         // Attack cards
         
-        {   name:       'Attack',
+        {   type:       'attack',
+            name:       'Attack',
             cost:       2,
             attack:     5,
             defence:    0,
@@ -30,7 +31,8 @@ export const dataProvider = {
             image:      'path_to_image',
         },
         
-        {   name:       'Defence',
+        {   type:       'defence',
+            name:       'Defence',
             cost:       1,
             attack:     0,
             defence:    4,
@@ -38,27 +40,30 @@ export const dataProvider = {
             image:      'path_to_image',
         },
 
-        {   name:       'Counter',
+        {   type:       'counter',
+            name:       'Counter',
             cost:       1,
-            attack:     4,
+            attack:     7,
             defence:    0,
             probability:0.4,    
             text:       'ダメージを与える',
             image:      'path_to_image',
         },
 
-        {   name:       'Shield Bash',
+        {   type:       'bash',
+            name:       'Shield Bash',
             cost:       1,
-            attack:     1,
+            attack:     0,
             defence:    0,
-            probability:0.4,    
+            probability:0.6,    
             text:       'ダメージを与える',
             image:      'path_to_image',
         },        
 
 
 
-        {   name:       'Portal',
+        {   type:       'portal',
+            name:       'Portal',
             cost:       2,
             text:       '戦闘を離脱\n非戦当時は地上へ戻る',
             image:      'path_to_image',

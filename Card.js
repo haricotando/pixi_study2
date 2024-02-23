@@ -18,7 +18,7 @@ export class Card extends PIXI.Container {
         let cardHeight = Math.round(cardWitdh * dataProvider.cardGeometries.ratio);
         this.background = this.addChild(GraphicsHelper.exDrawRect(0, 0, cardWitdh, cardHeight, false, {color:0xFFFFFF}));
 
-        this.label = this.addChild(new PIXI.Text(card.name, Utils.cloneTextStyle(dataProvider.style.base, {fill:dataProvider.color.dark1, align:'center', fontWeight:500, fontSize:45})));
+        this.label = this.addChild(new PIXI.Text(card.name, Utils.cloneTextStyle(dataProvider.style.base, {fill:dataProvider.color.dark1, align:'center', fontWeight:500, fontSize:40})));
         this.label.anchor.set(0.5);
         this.label.x = cardWitdh / 2;
         this.label.y = 40;
@@ -33,17 +33,22 @@ export class Card extends PIXI.Container {
         this.labelText.x = cardWitdh / 2;
         this.labelText.y = 170;
 
-        switch(card.name){
-            case 'Attack':
+        switch(card.type){
+            case 'attack':
                 this.labelVal.text = card.attack;
                 break;
-            case 'Defence':
+            case 'defence':
                 this.labelVal.text = card.defence;
                 break;
-            case 'Counter':
+            case 'counter':
                 this.labelVal.text = card.attack;
                 let dodgeVal = card.probability * 100;
                 this.labelText.text = `Dodge: ${dodgeVal}%`;
+                break;
+            case 'bash':
+                this.labelVal.text = card.attack;
+                let bashVal = card.probability * 100;
+                this.labelText.text = `Dodge: ${bashVal}%`;
                 break;
         }
     }

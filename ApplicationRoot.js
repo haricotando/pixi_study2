@@ -33,8 +33,8 @@ export class ApplicationRoot extends PIXI.Container {
     initDefaultDeck() {
         dataProvider.deck = [
             0, 0, 0, 0, 0,
-            1, 1, 1 ,1,
-            2, 2, 2,
+            1, 1, 1,
+            2, 2,
         ];
     }
 
@@ -110,7 +110,7 @@ export class ApplicationRoot extends PIXI.Container {
     /* ------------------------------------------------------------
         Stats
     ------------------------------------------------------------ */
-    updatePlayerStats(withFx, lethalDamage) {
+    updatePlayerStats(withFx, att, lethalDamage) {
         let hp = `HP: ${dataProvider.playerStats.hp}`;
         let food = `Food: ${dataProvider.playerStats.food}`;
         this.txtFldPlayerStats.text = `${hp} / ${food}`
@@ -121,7 +121,25 @@ export class ApplicationRoot extends PIXI.Container {
         if (lethalDamage) {
             this.setSceneDie();
         }
+        
+        if (withFx) {
+            let damageDrop = this.addChild(new PIXI.Text(att, Utils.cloneTextStyle(dataProvider.style.base, {fontSize:55})));
+            damageDrop.anchor.set(0.5);
+            damageDrop.x = 250;
+            damageDrop.y = 250;
+            damageDrop.alpha = 0;
+
+            gsap.timeline()
+                .set(damageDrop, {y:200, alpha:1, delay:0.1})
+                .to(damageDrop, {y:250, ease:'bounce', duration:0.3})
+                .to(damageDrop, {alpha:0, duration:0.1, ease:'linear', onComplete: () => {
+                     this.removeChild(damageDrop);
+                    }})
+        }
+
     }
+
+
 
     updateGameStats() {
         this.txtFldGame.text = `Dungeon: ${dataProvider.gameStats.dungeon}`

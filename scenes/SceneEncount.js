@@ -1,4 +1,5 @@
 import AlignHelper from '../helper/AlignHelper.js';
+import Dice from '../helper/Dice.js';
 import Utils from '../helper/Utils.js';
 import { dataProvider } from '../dataProvider.js';
 import GraphicsHelper from '../helper/GraphicsHelper.js';
@@ -38,6 +39,8 @@ export class SceneEncount extends PIXI.Container {
     ------------------------------------------------------------ */
     turnStart(){
         this.diceEnemyAction();
+        this.playerNextAction.attack = 0;
+        this.playerNextAction.defence = 0;
         // this.updateEnemyStats();
     }
 
@@ -88,23 +91,106 @@ export class SceneEncount extends PIXI.Container {
         this.playerNextAction.attack = card.attack;
         this.playerNextAction.defence = card.defence;
 
-        switch(card.name){
-            case 'Attack':
-                this.playerTurn(card);
+        let tl = gsap.timeline();
+
+        switch(card.type){
+            case 'attack':
+                this.enemy.hp -= card.attack;
+                let isLethal = this.enemy.hp <= 0;
+                this.addTimelineAttack(card, tl);
+                if(isLethal){
+                    this.addTimelineEndGame(tl);
+                }else{
+                    this.
+                    // this.addTimelineTurnStart(tl);
+                }
                 break;
-            case 'Defence':
-                this.enemyTurn(card);
+            case 'defence':
+                let att = this.enemyNextAction.attack - this.playerNextAction.defence;
+                att = att < 0 ? 0 : att;
+                let isPlayerDie = dataProvider.playerStats.hp - att <= 0;
+                this.addTimelineEnemyAtcion(tl);
+                this.addTimelineDefence(tl, att, isPlayerDie);
+                if(isPlayerDie){
+                    // this.add(tl);
+                }else{
+                    this.addTimelineTurnStart(tl);
+                }
+                // this.enemyTurn(card);
                 break;
-                case 'Counter':
-                this.enemyTurn(card, true);
-                // this.counterAttack(card);
+            case 'counter':
+                this.addTimelineEnemyAtcion(tl);
+                if(Dice.roll(card.probability)){
+                    this.addTimelineAttack(card, tl);
+                }else{
+                    this.addTimelineDefence(tl, this.enemyNextAction.attack);
+                }
+                this.addTimelineTurnStart(tl);
+                break;
+            case 'bash':
+                this.addTimelineEnemyAtcion(tl);
+                if(Dice.roll(card.probability)){
+                    this.addTimelineAttack(card, tl);
+                }else{
+                    this.addTimelineDefence(tl, this.enemyNextAction.attack);
+                }
+                this.addTimelineTurnStart(tl);
                 break;
         }
-        // if(card.attack){
-            //     this.playerTurn(card);
-        // }else{
-        //     this.enemyTurn(card);
-        // }
+
+        this.cardContainer.visible = false;
+    }
+
+    addTimelineAttack(card, tl){
+        let damageDrop = this.addChild(new PIXI.Text(card.attack, Utils.cloneTextStyle(dataProvider.style.base, {fontSize:55})));
+        damageDrop.anchor.set(0.5);
+        damageDrop.x = 350;
+        damageDrop.y = this.txtFldEnemyStats.y;
+        damageDrop.alpha = 0;
+
+        gsap.timeline()
+            .set(damageDrop, {y:this.txtFldEnemyStats.y-50, alpha:1, delay:0.1})
+            .to(damageDrop, {y:this.txtFldEnemyStats.y, ease:'bounce', duration:0.3})
+            .to(damageDrop, {alpha:0, duration:0.1, ease:'linear', onComplete: () => {
+                 this.removeChild(damageDrop);
+                }})
+
+        tl
+        .set(this.txtFldEnemy, {y:460, x:dataProvider.wWidth / 2 + 50, delay:0.05})
+        .call(()=>{
+            this.txtFldEnemyStats.text = `hp: ${this.enemy.hp}`;
+        })
+        .set(this.txtFldEnemy, {y:440, x:dataProvider.wWidth / 2 - 50, delay:0.05})
+        .to(this.txtFldEnemy, {x:dataProvider.wWidth/2, y:450, duration:0.2, ease:'back.out(1.5)'})
+    }
+
+    addTimelineEnemyAtcion(tl){
+        tl
+            .set(this.txtFldEnemyNext, {alpha:0})
+            .to(this.txtFldEnemyNext, {alpha:1, duration:0.1, repeat:2})
+    }
+
+    addTimelineDefence(tl, att, isPlayerDie){
+        tl
+            .call(()=>{
+                dataProvider.playerStats.hp -= att;
+                this.parent.updatePlayerStats(true, att, isPlayerDie);
+        });
+    }
+
+
+    addTimelineTurnStart(tl){
+        tl
+        .call(()=>{
+            this.cardContainer.visible = true;
+            this.turnStart();
+        });
+    }
+
+    addTimelineEndGame(tl){
+        tl.call(()=>{
+            this.endGame();
+        });
     }
 
     playerTurn(card, isCounter){
