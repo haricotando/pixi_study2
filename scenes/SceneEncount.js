@@ -101,7 +101,6 @@ export class SceneEncount extends PIXI.Container {
                 if(isLethal){
                     this.addTimelineEndGame(tl);
                 }else{
-                    this.
                     // this.addTimelineTurnStart(tl);
                 }
                 break;
