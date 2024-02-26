@@ -11,21 +11,12 @@ export class SceneEncount extends PIXI.Container {
     ============================================================ */
     constructor() {
         super();
-        this.enemy = JSON.parse(JSON.stringify(dataProvider.enemy[0]));
-        this.enemyNextAction = {
-            attack:     0, defence:    0
-        };
 
-        this.playerNextAction = {
-            attack:0, defence:0, 
-        }
+        // init Enemy
+        this.enemy = JSON.parse(JSON.stringify(dataProvider.enemy[Math.floor(Math.random() * dataProvider.enemy.length)]));
+        this.enemyNextAction = {attack: 0, defence: 0};
 
-        this.initDisplay();
-
-        this.txtFldEnemy.text = `Enemy: ${this.enemy.name}`;
-        this.txtFldEnemyStats.text = `hp: ${this.enemy.hp}`;
-
-
+        this.initEnemyDisplay();
         this.turnStart();
         
         this.cardContainer = this.addChild(new CardContainer());
@@ -35,150 +26,78 @@ export class SceneEncount extends PIXI.Container {
     }
 
     /* ------------------------------------------------------------
-        turn init
-    ------------------------------------------------------------ */
-    turnStart(){
-        this.diceEnemyAction();
-        this.playerNextAction.attack = 0;
-        this.playerNextAction.defence = 0;
-        // this.updateEnemyStats();
-    }
-
-    /* ------------------------------------------------------------
         Enemy
     ------------------------------------------------------------ */
     diceEnemyAction(){
         let randomIndex = Math.floor(Math.random() * this.enemy.attack.length);
         this.enemyNextAction.attack = this.enemy.attack[randomIndex];
-        this.txtFldEnemyNext.text = `next ... attack: ${this.enemyNextAction.attack}`;
+        this.txtFldEnemyNext.text = `Next ... Attack: ${this.enemyNextAction.attack}`;
     }
-    
-    enemyTurn(card, isCounter){
 
-        let isCounterSuccess = false;
-        if(isCounter){
-            isCounterSuccess = Math.random()*1 < card.probability;
-            console.log("🚀 ~ SceneEncount ~ enemyTurn ~ isCounterSuccess:", isCounterSuccess)
+    /* ============================================================
+        Add Timeline
+    ============================================================ */
+
+    atlAttack(tl, card){
+        let isLethal = this.enemy.hp - card.attack <= 0;
+        this.atlEmenyDamage(tl, card.attack);
+        if(isLethal){
+            this.atlDefeatEnemy(tl);
         }
-
-        let att = this.enemyNextAction.attack - this.playerNextAction.defence;
-        att = att < 0 ? 0 : att;
-        let isLethalDamage = dataProvider.playerStats.hp - att <= 0;
-
-        gsap.timeline()
-            .set(this.txtFldEnemyNext, {alpha:0})
-            .to(this.txtFldEnemyNext, {alpha:1, duration:0.1, repeat:2})
-            .call(()=>{
-                if(isCounterSuccess){
-                    this.playerTurn(card, true);
-                }else{
-                    dataProvider.playerStats.hp -= att;
-                    this.parent.updatePlayerStats(true, isLethalDamage);
-                    if(!isLethalDamage){
-                        this.turnStart();
-                    }
-                }
-                
-        });
+        return isLethal;
     }
 
-    /* ------------------------------------------------------------
-        Player
-    ------------------------------------------------------------ */
-    playCard(id){
-        let card = dataProvider.cards[id];
+    atlEmenyDamage(tl, attack){
+        this.enemy.hp -= attack;
+        this.txtFldEnemyStats.text = `HP: ${this.enemy.hp}`;
 
-        this.playerNextAction.attack = card.attack;
-        this.playerNextAction.defence = card.defence;
+        let orgPosX = this.txtFldEnemyStats.x;
+        tl
+        .set(this.txtFldEnemyStats, {x:orgPosX - 40, y:120, delay:0.05})
+        .to(this.txtFldEnemyStats, {x:orgPosX, y:140, duration:0.1, ease:'back.out(4)'})
+        .set(this.enemyDisplay, {x:dataProvider.wWidth / 2 + 100, y:350, duration:0.1, ease:'back.out(4)'})
+        .to(this.enemyDisplay, {x:dataProvider.wWidth / 2, y:450, duration:0.1, ease:'back.out(4)'})
 
-        let tl = gsap.timeline();
-
-        switch(card.type){
-            case 'attack':
-                this.enemy.hp -= card.attack;
-                let isLethal = this.enemy.hp <= 0;
-                this.addTimelineAttack(card, tl);
-                if(isLethal){
-                    this.addTimelineEndGame(tl);
-                }else{
-                    // this.addTimelineTurnStart(tl);
-                }
-                break;
-            case 'defence':
-                let att = this.enemyNextAction.attack - this.playerNextAction.defence;
-                att = att < 0 ? 0 : att;
-                let isPlayerDie = dataProvider.playerStats.hp - att <= 0;
-                this.addTimelineEnemyAtcion(tl);
-                this.addTimelineDefence(tl, att, isPlayerDie);
-                if(isPlayerDie){
-                    // this.add(tl);
-                }else{
-                    this.addTimelineTurnStart(tl);
-                }
-                // this.enemyTurn(card);
-                break;
-            case 'counter':
-                this.addTimelineEnemyAtcion(tl);
-                if(Dice.roll(card.probability)){
-                    this.addTimelineAttack(card, tl);
-                }else{
-                    this.addTimelineDefence(tl, this.enemyNextAction.attack);
-                }
-                this.addTimelineTurnStart(tl);
-                break;
-            case 'bash':
-                this.addTimelineEnemyAtcion(tl);
-                if(Dice.roll(card.probability)){
-                    this.addTimelineAttack(card, tl);
-                }else{
-                    this.addTimelineDefence(tl, this.enemyNextAction.attack);
-                }
-                this.addTimelineTurnStart(tl);
-                break;
-        }
-
-        this.cardContainer.visible = false;
-    }
-
-    addTimelineAttack(card, tl){
-        let damageDrop = this.addChild(new PIXI.Text(card.attack, Utils.cloneTextStyle(dataProvider.style.base, {fontSize:55})));
+        let damageDrop = this.addChild(new PIXI.Text(attack, Utils.cloneTextStyle(dataProvider.style.base, {fontSize:70})));
         damageDrop.anchor.set(0.5);
-        damageDrop.x = 350;
-        damageDrop.y = this.txtFldEnemyStats.y;
+        damageDrop.x = dataProvider.wWidth / 2;
+        damageDrop.y = 750;
         damageDrop.alpha = 0;
 
-        gsap.timeline()
-            .set(damageDrop, {y:this.txtFldEnemyStats.y-50, alpha:1, delay:0.1})
-            .to(damageDrop, {y:this.txtFldEnemyStats.y, ease:'bounce', duration:0.3})
-            .to(damageDrop, {alpha:0, duration:0.1, ease:'linear', onComplete: () => {
-                 this.removeChild(damageDrop);
-                }})
-
         tl
-        .set(this.txtFldEnemy, {y:460, x:dataProvider.wWidth / 2 + 50, delay:0.05})
-        .call(()=>{
-            this.txtFldEnemyStats.text = `hp: ${this.enemy.hp}`;
-        })
-        .set(this.txtFldEnemy, {y:440, x:dataProvider.wWidth / 2 - 50, delay:0.05})
-        .to(this.txtFldEnemy, {x:dataProvider.wWidth/2, y:450, duration:0.2, ease:'back.out(1.5)'})
+        .set(damageDrop, {y:650, alpha:1})
+        .to(damageDrop, {y:750, duration:0.1, ease:'back.out(1.2)'})
+        .to(damageDrop, {alpha:0.2, duration:0.1, onComplete: () => {
+            this.removeChild(damageDrop);
+           }})
     }
 
-    addTimelineEnemyAtcion(tl){
-        tl
-            .set(this.txtFldEnemyNext, {alpha:0})
-            .to(this.txtFldEnemyNext, {alpha:1, duration:0.1, repeat:2})
+    atlDefence(tl){
+        let damage = this.enemyNextAction.attack - this.playerNextAction.defence;
+        damage = damage < 0 ? 0 : damage;
+        let isPlayerDie = dataProvider.playerStats.hp - damage <= 0;
+        this.atlEmemyAttack(tl, damage);
+        if(isPlayerDie){
+            this.atlDie(tl);
+        }
+        return isPlayerDie;
     }
 
-    addTimelineDefence(tl, att, isPlayerDie){
+    atlEnemyAction(tl){
+        let orgPosX = this.txtFldEnemy.x;
         tl
-            .call(()=>{
-                dataProvider.playerStats.hp -= att;
-                this.parent.updatePlayerStats(true, att, isPlayerDie);
-        });
+        .set(this.frame.scale, {x:1.1, y:1.1})
+        .to(this.frame.scale, {x:1, y:1, duration:0.2, ease:'easeOutExpo'})
+        .set(this.txtFldEnemy, {x:orgPosX - 40})
+        .to(this.txtFldEnemy, {x:orgPosX, duration:0.2, ease:'back.out(1.2)'})
     }
 
+    atlEmemyAttack(tl, attack){
+        dataProvider.playerStats.hp -= attack;
+        dataProvider.display.damage(tl, attack);
+    }
 
-    addTimelineTurnStart(tl){
+    atlTurnEnd(tl){
         tl
         .call(()=>{
             this.cardContainer.visible = true;
@@ -186,73 +105,104 @@ export class SceneEncount extends PIXI.Container {
         });
     }
 
-    addTimelineEndGame(tl){
-        tl.call(()=>{
+    atlDefeatEnemy(tl){
+        tl
+        .call(()=>{
             this.endGame();
         });
     }
 
-    playerTurn(card, isCounter){
-        this.enemy.hp -= card.attack;
-
-        let isLethal = this.enemy.hp <= 0;
-
-        gsap.timeline()
-            .set(this.txtFldEnemy, {y:460, x:dataProvider.wWidth / 2 + 50, delay:0.05})
-            .set(this.txtFldEnemy, {y:440, x:dataProvider.wWidth / 2 - 50, delay:0.05})
-            .to(this.txtFldEnemy, {x:dataProvider.wWidth/2, y:450, duration:0.2, ease:'back.out(1.5)'})
-            .call(()=>{
-
-                this.txtFldEnemyStats.text = `hp: ${this.enemy.hp}`;
-                gsap.timeline()
-                    .set(this.txtFldEnemyStats, {alpha:0, delay:0})
-                    .to(this.txtFldEnemyStats, {alpha:1, ease:"steps(1)", duration:0.1, repeat:1})
-
-                    .call(()=>{
-                        if(isLethal){
-                            //  Lethal flag
-                            gsap.timeline()
-                                .to(this.txtFldEnemy, {alpha:0, duration:0.1, repeat:2})
-                                .call(()=>{
-                                    this.endGame();
-                                });
-                        }else{
-                            // Enemy turn
-                            if(isCounter){
-                                this.turnStart();
-                            }else{
-                                this.enemyTurn(card);
-                            }
-                        }
-                    });
-
+    atlDie(tl){
+        tl
+        .call(()=>{
+            let btnContinue = this.addButton('Continue..');
+            btnContinue.y = 1000;
+            btnContinue.on('touchstart', (event) => {
+                this.endGameContinue();
             });
+        });
+    }
+
+    /* ------------------------------------------------------------
+        turn init
+    ------------------------------------------------------------ */
+    turnStart(){
+        this.diceEnemyAction();
+        this.playerNextAction = {attack:0, defence:0};
+    }
+
+    /* ------------------------------------------------------------
+        Player
+    ------------------------------------------------------------ */
+    playCard(id){
+        let card = dataProvider.cards[id];
+        this.playerNextAction.attack = card.attack;
+        this.playerNextAction.defence = card.defence;
+
+        let damage = 0;
+        let isPlayerDie;
+        let isLethal;
+
+        let tl = gsap.timeline();
+
+        switch(card.type){
+            case 'attack':
+                let isLethal = this.atlAttack(tl, card);
+                if(!isLethal){
+                    this.atlEnemyAction(tl);
+                    let isPlayerDie = this.atlDefence(tl);
+                    if(!isPlayerDie){
+                        this.atlTurnEnd(tl);
+                    }
+                }
+                break;
+            case 'defence':
+                this.atlEnemyAction(tl);
+                let isPlayerDie = this.atlDefence(tl);
+                if(!isPlayerDie){
+                    this.atlTurnEnd(tl);
+                }
+                break;
+            case 'counter':
+                this.atlEnemyAction(tl);
+                if(Dice.roll(card.probability)){
+                    let isLethal = this.atlAttack(tl, card);
+                    if(!isLethal){
+                        this.atlTurnEnd(tl);
+                    }
+                }else{
+                    let isPlayerDie = this.atlDefence(tl);
+                    if(!isPlayerDie){
+                        this.atlTurnEnd(tl);
+                    }
+               }
+                break;
+        }
+
+        this.cardContainer.visible = false;
     }
 
     endGame(){
         this.removeChild(this.cardContainer);
         this.txtFldEnemy.text = 'enemy defeated.';
         this.txtFldEnemyStats.text = '';
-        this.txtFldEnemyNext.text = 'food + 10';
+        this.txtFldEnemyNext.text = 'food + 2';
         this.txtFldEnemyExtra.text = 'select card rewards...';
         let btnContinue = this.addButton('Continue..');
-        btnContinue.y = 800;
+        btnContinue.y = 900;
         btnContinue.on('touchstart', (event) => {
             this.endGameContinue();
         });
     }
     
     selectCardReward(){
-
     }
 
     endGameContinue(){
-        dataProvider.playerStats.food += 10;
+        dataProvider.playerStats.food += 2;
+        // dataProvider.updateStats()
         gsap.timeline()
-            .set(this.parent.txtFldPlayerStats, {alpha:0.1})
-            .to(this.parent.txtFldPlayerStats, {alpha:1, duration:0.5, ease:'linear', repeat:1})
             .call(()=>{
-                this.parent.updatePlayerStats();
                 this.parent.setSceneForward();
             })
 
@@ -262,32 +212,45 @@ export class SceneEncount extends PIXI.Container {
     /* ------------------------------------------------------------
         initDisplays
     ------------------------------------------------------------ */
-    initDisplay(){
+    initEnemyDisplay(){
         let margin = 100;
-        let frame = this.addChild(GraphicsHelper.exDrawRect(0, 0, dataProvider.wWidth - margin*2, 300, {color:0xFFFFFF, width:2}, false));
-        Utils.pivotX(frame);
-        frame.x = dataProvider.wWidth / 2;
-        frame.y = 400;
+        this.enemyDisplay = this.addChild(new PIXI.Container());
+        
+        this.enemyDisplay.y = 450;
+        let frameWidth = dataProvider.wWidth - margin*2;
+        this.frame = this.enemyDisplay.addChild(GraphicsHelper.exDrawRect(0, 0, frameWidth, 350, {color:0xFFFFFF, width:2}, false));
+        Utils.pivotCenter(this.frame);
+        this.frame.x = frameWidth / 2;
+        this.frame.y = 175;
+        
 
-        this.txtFldEnemy = this.addChild(new PIXI.Text('Enemy: XXX', Utils.cloneTextStyle(dataProvider.style.base, {fontSize:55})));
+        Utils.pivotX(this.enemyDisplay);
+        this.enemyDisplay.x = dataProvider.wWidth/2;
+
+        this.txtFldEnemy = this.enemyDisplay.addChild(new PIXI.Text('XXX', Utils.cloneTextStyle(dataProvider.style.base, {fontSize:55})));
         this.txtFldEnemy.anchor.set(0.5);
-        this.txtFldEnemy.x = dataProvider.wWidth / 2;
-        this.txtFldEnemy.y = 450;
+        this.txtFldEnemy.x = frameWidth / 2;
+        this.txtFldEnemy.y = 70;
 
-        this.txtFldEnemyStats = this.addChild(new PIXI.Text('HP: XX', Utils.cloneTextStyle(dataProvider.style.base, {fontWeight:300, fontSize:55})));
+        this.txtFldEnemyStats = this.enemyDisplay.addChild(new PIXI.Text('HP: XX', Utils.cloneTextStyle(dataProvider.style.base, {fontWeight:300, fontSize:55})));
         this.txtFldEnemyStats.anchor.set(0.5);
-        this.txtFldEnemyStats.x = dataProvider.wWidth / 2;
-        this.txtFldEnemyStats.y = 520;
+        this.txtFldEnemyStats.x = frameWidth / 2;
+        this.txtFldEnemyStats.y = 140;
 
-        this.txtFldEnemyNext = this.addChild(new PIXI.Text('@ attack: XX', Utils.cloneTextStyle(dataProvider.style.base, {fontWeight:300, fontSize:55})));
+        this.txtFldEnemyNext = this.enemyDisplay.addChild(new PIXI.Text('Next ... Attack: XX', Utils.cloneTextStyle(dataProvider.style.base, {fontWeight:300, fontSize:55})));
         this.txtFldEnemyNext.anchor.set(0.5);
-        this.txtFldEnemyNext.x = dataProvider.wWidth / 2;
-        this.txtFldEnemyNext.y = 580;
+        this.txtFldEnemyNext.x = frameWidth / 2;
+        this.txtFldEnemyNext.y = 210;
 
-        this.txtFldEnemyExtra = this.addChild(new PIXI.Text('-----', Utils.cloneTextStyle(dataProvider.style.base, {fontWeight:300, fontSize:55})));
+        this.txtFldEnemyExtra = this.enemyDisplay.addChild(new PIXI.Text(' XXXX ', Utils.cloneTextStyle(dataProvider.style.base, {fontStyle:'italic', fontWeight:300, fontSize:55})));
         this.txtFldEnemyExtra.anchor.set(0.5);
-        this.txtFldEnemyExtra.x = dataProvider.wWidth / 2;
-        this.txtFldEnemyExtra.y = 640;
+        this.txtFldEnemyExtra.x = frameWidth / 2;
+        this.txtFldEnemyExtra.y = 280;
+
+        //
+        this.txtFldEnemy.text = this.enemy.name;
+        this.txtFldEnemyStats.text = `HP: ${this.enemy.hp}`
+        this.txtFldEnemyExtra.text = '';
     }
 
     addButton(arg){

@@ -2,12 +2,12 @@ class Dice {
     
     static roll(probability){
         let result = Math.random();
-        console.log(probability)
-        console.log("🚀 ~ Dice ~ roll ~ result:", result)
         
         if(result < probability){
+            console.log(`🦒 Probability: ${probability} / Result: ${result} :: true`);
             return true;
         }else{
+            console.log(`🦒 Probability: ${probability} / Result: ${result} :: false`);
             return false;
         }
     }

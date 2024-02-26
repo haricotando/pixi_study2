@@ -23,14 +23,6 @@ export class SceneNeutral extends PIXI.Container {
         let btnPortal = this.addButton('Portal..');
         btnPortal.y = 800;
 
-        // let btnRest = this.addButton('Rest');
-        // btnRest.x = 350;
-        // btnRest.y = 300;
-
-        // let btnPortal = this.addButton('Portal');
-        // btnPortal.x = 600;
-        // btnPortal.y = 300;
-
         btnForward.on('touchstart', (event) => {
             this.parent.setSceneForward();
         });

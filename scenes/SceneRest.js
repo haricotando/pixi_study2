@@ -10,20 +10,14 @@ export class SceneRest extends PIXI.Container {
     constructor() {
         super();
 
-
         dataProvider.playerStats.hp += Math.round(dataProvider.playerStats.maxHp / 5);
         dataProvider.playerStats.hp = dataProvider.playerStats.hp > dataProvider.playerStats.maxHp ? dataProvider.playerStats.maxHp : dataProvider.playerStats.hp;
         dataProvider.playerStats.food -= 1;
 
         this.initMessage();
+        dataProvider.display.updateHP(gsap.timeline())
+        dataProvider.display.updateFood(gsap.timeline())
         this.initSelector();
-
-        this.parent.updatePlayerStats();
-
-        // this.parent.updatePlayerStats.alhpa = 0.2;
-        // gsap.timeline()
-            // .set(this.parent.txtFldPlayerStats, {alpha:0})
-            // .to(this.parent.txtFldPlayerStats, {alpha:1, duration:0.1, repeat:2})
     }
 
     initMessage(){
@@ -34,24 +28,24 @@ export class SceneRest extends PIXI.Container {
     }
 
     initSelector(){
-        let btn = this.addButton('Go');
-        btn.x = 100;
-        btn.y = 500;
 
-        btn.on('touchstart', (event) => {
+        let btnForward = this.addButton('Foward..');
+        btnForward.y = 500;
+
+        btnForward.on('touchstart', (event) => {
             this.parent.setSceneForward();
         });
-        
-        
     }
     
     addButton(arg){
+        let margin = 300;
         let button = this.addChild(new PIXI.Sprite());
-        let rect = button.addChild(GraphicsHelper.exDrawRect(0, 0, 200, 100, {color:0xFFFFFF}, {color:0x000000}))
-        let label = button.addChild(new PIXI.Text(arg, Utils.cloneTextStyle(dataProvider.style.jp)));
+        let rect = button.addChild(GraphicsHelper.exDrawRect(0, 0, dataProvider.wWidth - margin*2, 100, {color:0xFFFFFF}, {color:0x000000}))
+        let label = button.addChild(new PIXI.Text(arg, Utils.cloneTextStyle(dataProvider.style.base, {fontSize: 50})));
+        label.anchor.set(0, 0.5);
         label.x = 20;
-        label.y = 20;
-        
+        label.y = 50;
+        button.x = margin;
         button.interactive = true;
         return button;
     }

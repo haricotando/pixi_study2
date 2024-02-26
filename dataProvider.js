@@ -22,7 +22,8 @@ export const dataProvider = {
     cards:[
         // Attack cards
         
-        {   type:       'attack',
+        {
+            type:       'attack',
             name:       'Attack',
             cost:       2,
             attack:     5,
@@ -31,16 +32,18 @@ export const dataProvider = {
             image:      'path_to_image',
         },
         
-        {   type:       'defence',
+        {
+            type:       'defence',
             name:       'Defence',
             cost:       1,
             attack:     0,
-            defence:    4,
+            defence:    2,
             text:       'ガードを得る',
             image:      'path_to_image',
         },
 
-        {   type:       'counter',
+        {
+            type:       'counter',
             name:       'Counter',
             cost:       1,
             attack:     7,
@@ -50,7 +53,8 @@ export const dataProvider = {
             image:      'path_to_image',
         },
 
-        {   type:       'bash',
+        {
+            type:       'bash',
             name:       'Shield Bash',
             cost:       1,
             attack:     0,
@@ -62,7 +66,8 @@ export const dataProvider = {
 
 
 
-        {   type:       'portal',
+        {
+            type:       'portal',
             name:       'Portal',
             cost:       2,
             text:       '戦闘を離脱\n非戦当時は地上へ戻る',
@@ -75,6 +80,15 @@ export const dataProvider = {
             name:       'Root',
             hp:         16,
             attack:     [2, 2, 2, 4, 4, 6],
+            // attack:     [8,8,8,8],
+            defence:    2,
+        },
+        
+        {
+            name:       'Debv',
+            hp:         12,
+            // attack:     [8,8,8,8],
+            attack:     [2, 2, 2, 3, 3],
             defence:    2,
         }
     ],
@@ -83,14 +97,16 @@ export const dataProvider = {
     // Player status管理
     playerStats:
     {
-        hp:     10,
-        maxHp:  40,
-        oxigen: 100,
-        food:   10,
+        hp:         20,
+        maxHp:      20,
+        oxigen:     100,
+        food:       10,
+        cardMax:    15,
     },
     gameStats:
     {
         dungeon: 1,
+        untilDawn: 10,
     }
 };
 

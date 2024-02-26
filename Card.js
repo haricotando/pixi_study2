@@ -12,7 +12,9 @@ export class Card extends PIXI.Container {
     constructor(index, cardId) {
         super();
 
+        this.cardId = cardId;
         const card = dataProvider.cards[cardId];
+        const bSelected = false;
 
         const cardWitdh = dataProvider.cardGeometries.baseWidth;
         let cardHeight = Math.round(cardWitdh * dataProvider.cardGeometries.ratio);
