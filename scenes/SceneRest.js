@@ -10,7 +10,7 @@ export class SceneRest extends PIXI.Container {
     constructor() {
         super();
 
-        dataProvider.playerStats.hp += Math.round(dataProvider.playerStats.maxHp / 5);
+        dataProvider.playerStats.hp += Math.round(dataProvider.playerStats.maxHp * 0.25);
         dataProvider.playerStats.hp = dataProvider.playerStats.hp > dataProvider.playerStats.maxHp ? dataProvider.playerStats.maxHp : dataProvider.playerStats.hp;
         dataProvider.playerStats.food -= 1;
 
@@ -21,10 +21,10 @@ export class SceneRest extends PIXI.Container {
     }
 
     initMessage(){
-        let message = this.addChild(new PIXI.Text('Rest.. HP 50% / food-1', Utils.cloneTextStyle(dataProvider.style.jp, {fontSize:40})));
+        let message = this.addChild(new PIXI.Text('Rest.. HP 25% / food-1', Utils.cloneTextStyle(dataProvider.style.jp, {fontSize:40})));
         message.anchor.set(0.5);
         message.x = dataProvider.wWidth / 2;
-        message.y = 400;
+        message.y = 450;
     }
 
     initSelector(){

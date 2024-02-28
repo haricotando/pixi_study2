@@ -25,8 +25,7 @@ export const dataProvider = {
         {
             type:       'attack',
             name:       'Attack',
-            cost:       2,
-            attack:     5,
+            attack:     4,
             defence:    0,
             text:       'ダメージを与える',
             image:      'path_to_image',
@@ -35,9 +34,8 @@ export const dataProvider = {
         {
             type:       'defence',
             name:       'Defence',
-            cost:       1,
             attack:     0,
-            defence:    2,
+            defence:    6,
             text:       'ガードを得る',
             image:      'path_to_image',
         },
@@ -45,26 +43,43 @@ export const dataProvider = {
         {
             type:       'counter',
             name:       'Counter',
-            cost:       1,
             attack:     7,
             defence:    0,
-            probability:0.4,    
+            probability:0.3,
             text:       'ダメージを与える',
             image:      'path_to_image',
         },
 
         {
+            type:       'charge',
+            name:       'Charge',
+            attack:     0,
+            defence:    0,
+            damageBuff:  2,
+            damageDebuff:  1.5,
+            text:       'ダメージを与える',
+            image:      'path_to_image',
+        },
+
+        {
+            type:       'dodge',
+            name:       'Dodge',
+            attack:     0,
+            defence:    0,
+            probability:0.6,
+            text:       'ダメージを与える',
+            image:      'path_to_image',
+        },    
+        
+        {
             type:       'bash',
             name:       'Shield Bash',
-            cost:       1,
             attack:     0,
             defence:    0,
             probability:0.6,    
             text:       'ダメージを与える',
             image:      'path_to_image',
         },        
-
-
 
         {
             type:       'portal',
@@ -77,32 +92,36 @@ export const dataProvider = {
 
     enemy:[
         {
-            name:       'Root',
+            name:       'Hvbt',
             hp:         16,
-            attack:     [2, 2, 2, 4, 4, 6],
-            // attack:     [8,8,8,8],
+            attack:     [3, 3, 4, 4, 6],
             defence:    2,
         },
         
         {
             name:       'Debv',
             hp:         12,
-            // attack:     [8,8,8,8],
             attack:     [2, 2, 2, 3, 3],
             defence:    2,
-        }
+        },
     ],
 
     deck:[],
     // Player status管理
     playerStats:
     {
-        hp:         20,
-        maxHp:      20,
-        oxigen:     100,
-        food:       10,
-        cardMax:    15,
+        hp:                 20,
+        maxHp:              20,
+        // oxigen:             100,
+        food:               10,
+        cardMax:            15,
+
+        damageBuff:         1,
+        damageBuffCount:    0,
+        damageDebuff:       1,
+        damageDebuffCount:  0,
     },
+
     gameStats:
     {
         dungeon: 1,

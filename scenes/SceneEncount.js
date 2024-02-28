@@ -26,21 +26,121 @@ export class SceneEncount extends PIXI.Container {
     }
 
     /* ------------------------------------------------------------
-        Enemy
+        turn init
     ------------------------------------------------------------ */
+    turnStart(){
+        this.diceEnemyAction();
+        this.playerNextAction = {attack:0, defence:0};
+    }
+
     diceEnemyAction(){
         let randomIndex = Math.floor(Math.random() * this.enemy.attack.length);
-        this.enemyNextAction.attack = this.enemy.attack[randomIndex];
+        this.enemyNextAction.attack = Math.round(this.enemy.attack[randomIndex] * dataProvider.playerStats.damageDebuff);
         this.txtFldEnemyNext.text = `Next ... Attack: ${this.enemyNextAction.attack}`;
     }
 
-    /* ============================================================
+    /* ------------------------------------------------------------
+        Player
+    ------------------------------------------------------------ */
+    playCard(id){
+        let card = dataProvider.cards[id];
+        
+        this.playerNextAction.attack = Math.round(card.attack * dataProvider.playerStats.damageBuff);
+        // this.playerNextAction.attack = card.attack;
+        this.playerNextAction.defence = card.defence;
+
+        let isPlayerDie;
+        let isLethal;
+
+        let tl = gsap.timeline();
+
+        switch(card.type){
+            case 'attack':
+                dataProvider.display.playerAction(tl);
+                let isLethal = this.atlAttack(tl);
+                if(!isLethal){
+                    this.atlEnemyAction(tl);
+                    let isPlayerDie = this.atlDefence(tl);
+                    if(!isPlayerDie){
+                        this.atlTurnEnd(tl);
+                    }
+                }
+                break;
+
+            case 'defence':
+                this.atlEnemyAction(tl);
+                isPlayerDie = this.atlDefence(tl);
+                if(!isPlayerDie){
+                    this.atlTurnEnd(tl);
+                }
+                break;
+
+            case 'counter':
+                this.atlEnemyAction(tl);
+                if(Dice.roll(card.probability)){
+                    dataProvider.display.playerDodge(tl);
+                    dataProvider.display.playerAction(tl);
+                    let isLethal = this.atlAttack(tl);
+                    if(!isLethal){
+                        this.atlTurnEnd(tl);
+                    }
+                }else{
+                    let isPlayerDie = this.atlDefence(tl);
+                    if(!isPlayerDie){
+                        this.atlTurnEnd(tl);
+                    }
+               }
+                break;
+
+            case 'charge':                    
+                this.atlEnemyAction(tl);
+                isPlayerDie = this.atlDefence(tl);
+                if(!isPlayerDie){
+                    this.atlCharge(tl, card);
+                    this.atlTurnEnd(tl);
+                }
+                break;
+
+            case 'dodge':                    
+                this.atlEnemyAction(tl);
+                if(Dice.roll(card.probability)){
+                    dataProvider.display.playerDodge(tl);
+                    this.atlTurnEnd(tl);
+                }else{
+                    let isPlayerDie = this.atlDefence(tl);
+                    if(!isPlayerDie){
+                        this.atlTurnEnd(tl);
+                    }
+                }
+                break;
+        }
+
+        this.cardContainer.visible = false;
+    }
+
+   /* ============================================================
         Add Timeline
     ============================================================ */
+    atlCharge(tl, card){
+        dataProvider.display.playerCharge(tl);
+        tl
+        .call(()=>{
+            dataProvider.playerStats.damageBuffCount += 1;
+            dataProvider.playerStats.damageBuff = card.damageBuff;
+            dataProvider.playerStats.damageDebuffCount += 1;
+            dataProvider.playerStats.damageDebuff = card.damageDebuff;
+            this.txtFldPlayerBuff.text = `AttackAmp = ${dataProvider.playerStats.damageBuff} / DamageAmp = ${dataProvider.playerStats.damageDebuff}`;
+        })
+        .set(this.txtFldPlayerBuff.scale, {x:1.5, y:1.5})
+        .to(this.txtFldPlayerBuff.scale, {x:1, y:1,duration:0.2, ease:'bounce'})
 
-    atlAttack(tl, card){
-        let isLethal = this.enemy.hp - card.attack <= 0;
-        this.atlEmenyDamage(tl, card.attack);
+        
+    }
+    
+    atlAttack(tl){
+        let attack = this.playerNextAction.attack;
+        let isLethal = this.enemy.hp - attack <= 0;
+        this.atlEmenyDamage(tl, attack);
         if(isLethal){
             this.atlDefeatEnemy(tl);
         }
@@ -49,11 +149,13 @@ export class SceneEncount extends PIXI.Container {
 
     atlEmenyDamage(tl, attack){
         this.enemy.hp -= attack;
-        this.txtFldEnemyStats.text = `HP: ${this.enemy.hp}`;
-
+        
         let orgPosX = this.txtFldEnemyStats.x;
         tl
         .set(this.txtFldEnemyStats, {x:orgPosX - 40, y:120, delay:0.05})
+        .call(()=>{
+            this.txtFldEnemyStats.text = `HP: ${this.enemy.hp}`;
+        })
         .to(this.txtFldEnemyStats, {x:orgPosX, y:140, duration:0.1, ease:'back.out(4)'})
         .set(this.enemyDisplay, {x:dataProvider.wWidth / 2 + 100, y:350, duration:0.1, ease:'back.out(4)'})
         .to(this.enemyDisplay, {x:dataProvider.wWidth / 2, y:450, duration:0.1, ease:'back.out(4)'})
@@ -74,6 +176,9 @@ export class SceneEncount extends PIXI.Container {
 
     atlDefence(tl){
         let damage = this.enemyNextAction.attack - this.playerNextAction.defence;
+        console.log("🚀 ~ SceneEncount ~ atlDefence ~ this.playerNextAction.defence:", this.playerNextAction.defence)
+        console.log("🚀 ~ SceneEncount ~ atlDefence ~ this.enemyNextAction.attack:", this.enemyNextAction.attack)
+        console.log("🚀 ~ SceneEncount ~ atlDefence ~ damage:", damage)
         damage = damage < 0 ? 0 : damage;
         let isPlayerDie = dataProvider.playerStats.hp - damage <= 0;
         this.atlEmemyAttack(tl, damage);
@@ -86,10 +191,8 @@ export class SceneEncount extends PIXI.Container {
     atlEnemyAction(tl){
         let orgPosX = this.txtFldEnemy.x;
         tl
-        .set(this.frame.scale, {x:1.1, y:1.1})
-        .to(this.frame.scale, {x:1, y:1, duration:0.2, ease:'easeOutExpo'})
-        .set(this.txtFldEnemy, {x:orgPosX - 40})
-        .to(this.txtFldEnemy, {x:orgPosX, duration:0.2, ease:'back.out(1.2)'})
+        .set(this.txtFldEnemy, {alpha:0})
+        .to(this.txtFldEnemy, {alpha:1, duration:0.1, ease:'steps(2)', repeat:2})
     }
 
     atlEmemyAttack(tl, attack){
@@ -100,6 +203,19 @@ export class SceneEncount extends PIXI.Container {
     atlTurnEnd(tl){
         tl
         .call(()=>{
+
+            if(dataProvider.playerStats.damageBuffCount > 0){
+                dataProvider.playerStats.damageBuffCount -= 1;
+            }else{
+                dataProvider.playerStats.damageBuff = 1;
+            }
+
+            if(dataProvider.playerStats.damageDebuffCount > 0){
+                dataProvider.playerStats.damageDebuffCount -= 1;
+            }else{
+                dataProvider.playerStats.damageDebuff = 1;
+            }
+            this.txtFldPlayerBuff.text = `AttackAmp = ${dataProvider.playerStats.damageBuff} / DamageAmp = ${dataProvider.playerStats.damageDebuff}`;
             this.cardContainer.visible = true;
             this.turnStart();
         });
@@ -124,64 +240,8 @@ export class SceneEncount extends PIXI.Container {
     }
 
     /* ------------------------------------------------------------
-        turn init
+        endGame
     ------------------------------------------------------------ */
-    turnStart(){
-        this.diceEnemyAction();
-        this.playerNextAction = {attack:0, defence:0};
-    }
-
-    /* ------------------------------------------------------------
-        Player
-    ------------------------------------------------------------ */
-    playCard(id){
-        let card = dataProvider.cards[id];
-        this.playerNextAction.attack = card.attack;
-        this.playerNextAction.defence = card.defence;
-
-        let damage = 0;
-        let isPlayerDie;
-        let isLethal;
-
-        let tl = gsap.timeline();
-
-        switch(card.type){
-            case 'attack':
-                let isLethal = this.atlAttack(tl, card);
-                if(!isLethal){
-                    this.atlEnemyAction(tl);
-                    let isPlayerDie = this.atlDefence(tl);
-                    if(!isPlayerDie){
-                        this.atlTurnEnd(tl);
-                    }
-                }
-                break;
-            case 'defence':
-                this.atlEnemyAction(tl);
-                let isPlayerDie = this.atlDefence(tl);
-                if(!isPlayerDie){
-                    this.atlTurnEnd(tl);
-                }
-                break;
-            case 'counter':
-                this.atlEnemyAction(tl);
-                if(Dice.roll(card.probability)){
-                    let isLethal = this.atlAttack(tl, card);
-                    if(!isLethal){
-                        this.atlTurnEnd(tl);
-                    }
-                }else{
-                    let isPlayerDie = this.atlDefence(tl);
-                    if(!isPlayerDie){
-                        this.atlTurnEnd(tl);
-                    }
-               }
-                break;
-        }
-
-        this.cardContainer.visible = false;
-    }
-
     endGame(){
         this.removeChild(this.cardContainer);
         this.txtFldEnemy.text = 'enemy defeated.';
@@ -195,19 +255,16 @@ export class SceneEncount extends PIXI.Container {
         });
     }
     
-    selectCardReward(){
-    }
-
     endGameContinue(){
         dataProvider.playerStats.food += 2;
+        dataProvider.display.updateFood(gsap.timeline())
         // dataProvider.updateStats()
         gsap.timeline()
             .call(()=>{
-                this.parent.setSceneForward();
+                this.parent.setSceneSelectReward();
             })
 
     }
-
 
     /* ------------------------------------------------------------
         initDisplays
@@ -246,11 +303,17 @@ export class SceneEncount extends PIXI.Container {
         this.txtFldEnemyExtra.anchor.set(0.5);
         this.txtFldEnemyExtra.x = frameWidth / 2;
         this.txtFldEnemyExtra.y = 280;
-
+        
         //
         this.txtFldEnemy.text = this.enemy.name;
         this.txtFldEnemyStats.text = `HP: ${this.enemy.hp}`
         this.txtFldEnemyExtra.text = '';
+        
+        this.txtFldPlayerBuff = this.addChild(new PIXI.Text(' XXXX ', Utils.cloneTextStyle(dataProvider.style.base, {fontWeight:300, fontSize:55})));
+        this.txtFldPlayerBuff.text = '';
+        this.txtFldPlayerBuff.anchor.set(0.5);
+        this.txtFldPlayerBuff.x = dataProvider.wWidth / 2;
+        this.txtFldPlayerBuff.y = 850;
     }
 
     addButton(arg){

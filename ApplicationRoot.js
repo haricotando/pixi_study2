@@ -26,9 +26,9 @@ export class ApplicationRoot extends PIXI.Container {
         this.initDefaultDeck();
         this.initDisplayContainer();
         
-        this.setSceneSelectReward();
+        // this.setSceneSelectReward();
         // this.setSceneNeutral();
-        // this.setSceneEncount();
+        this.setSceneEncount();
         // this.setSceneDie()
     }
 
@@ -39,8 +39,9 @@ export class ApplicationRoot extends PIXI.Container {
 
     initDefaultDeck() {
         dataProvider.deck = [
-            0, 0, 0, 0, 0,
-            1, 1, 1, 1, 1,
+            0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1,
+            2, 3, 4
         ];
     }
 
@@ -104,24 +105,18 @@ export class ApplicationRoot extends PIXI.Container {
             .set(this.display, { alpha: 0.1 })
             .to(this.display, { alpha: 1, duration: 0.5, ease: 'linear', repeat: 2 })
             .call(() => {
-                let result = Math.round(Math.random() * 5);
+                let result = Math.round(Math.random() * 3);
                 switch (result) {
                     case 0:
                         this.setSceneNeutral();
                         break;
                     case 1:
-                        this.setSceneNeutral();
+                        this.setSceneEncount();
                         break;
                     case 2:
-                        this.setSceneNeutral();
+                        this.setSceneEncount();
                         break;
                     case 3:
-                        this.setSceneEncount();
-                        break;
-                    case 4:
-                        this.setSceneEncount();
-                        break;
-                    case 5:
                         this.setSceneEncount();
                         break;
                 }

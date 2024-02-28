@@ -9,7 +9,7 @@ export class Card extends PIXI.Container {
     /* ============================================================
         constructor
     ============================================================ */
-    constructor(index, cardId) {
+    constructor(index, cardId, dispBuff) {
         super();
 
         this.cardId = cardId;
@@ -37,7 +37,11 @@ export class Card extends PIXI.Container {
 
         switch(card.type){
             case 'attack':
-                this.labelVal.text = card.attack;
+                if(dispBuff){
+                    this.labelVal.text = card.attack * dataProvider.playerStats.damageBuff;
+                }else{
+                    this.labelVal.text = card.attack;
+                }
                 break;
             case 'defence':
                 this.labelVal.text = card.defence;
@@ -47,10 +51,14 @@ export class Card extends PIXI.Container {
                 let dodgeVal = card.probability * 100;
                 this.labelText.text = `Dodge: ${dodgeVal}%`;
                 break;
-            case 'bash':
-                this.labelVal.text = card.attack;
+            case 'charge':
+                this.labelVal.text = '';
                 let bashVal = card.probability * 100;
-                this.labelText.text = `Dodge: ${bashVal}%`;
+                this.labelText.text = `buff: ${card.damageBuff*100}%\ndebuff: ${card.damageDebuff*100}%`;
+                break;
+            case 'dodge':
+                this.labelVal.text = '';
+                this.labelText.text = `${card.probability*100}%`;
                 break;
         }
     }

@@ -23,7 +23,7 @@ export class CardContainer extends PIXI.Container {
         if(this.selectedCard != null){
             this.removeChild(this.selectedCard);
         }
-        this.selectedCard = this.addChild(new Card(index, cardId));
+        this.selectedCard = this.addChild(new Card(index, cardId, true));
         Utils.pivotCenter(this.selectedCard);
         this.selectedCard.x = dataProvider.wWidth / 2;
         this.selectedCard.y = -120;

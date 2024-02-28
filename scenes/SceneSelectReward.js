@@ -14,11 +14,18 @@ export class SceneSelectReward extends PIXI.Container {
         super();
 
         this.cards = [];
-        this.numOfMaxSelect = 5;
+        this.numOfMaxSelect = 0;
+        if(dataProvider.playerStats.cardMax > dataProvider.deck.length){
+           let diff = dataProvider.playerStats.cardMax - dataProvider.deck.length;
+           diff = diff > 5 ? 5 : diff;
+           this.numOfMaxSelect = diff;
+        }
         this.rewardCards = [
             0, 0, 0,
-            1, 1, 1,
-            2, 2, 2,
+            1, 1, 1, 
+            2,
+            3,
+            4,
         ];
 
         this.initDeck();
@@ -27,10 +34,12 @@ export class SceneSelectReward extends PIXI.Container {
 
         this.btnContinue = this.addButton('OK');
         this.btnContinue.y = 900;
-        this.btnContinue.visible = false;
         this.btnContinue.on('touchstart', (event) => {
             this.addRewardsToDeck();
         });
+        if(this.numOfMaxSelect > 0){
+            this.btnContinue.visible = false;
+        }
     }
 
     initDeck(){
@@ -49,7 +58,7 @@ export class SceneSelectReward extends PIXI.Container {
             card.y = posY;
             posX += (dataProvider.cardGeometries.baseWidth + 10);
             posXCount ++;
-            if(posXCount > 5){
+            if(posXCount > this.numOfMaxSelect){
                 posX = 0;
                 posXCount = 0;
                 posY += dataProvider.cardGeometries.baseWidth * dataProvider.cardGeometries.ratio + 10;
@@ -85,7 +94,7 @@ export class SceneSelectReward extends PIXI.Container {
         }
 
         dataProvider.deck.sort();
-        this.parent.setSceneForward();
+        this.parent.setSceneNeutral();
     }
 
     /* ------------------------------------------------------------
